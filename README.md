@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+#  **Playtime**
+### Sistema para Lojas de Brinquedos
 
-First, run the development server:
+---
+
+##  **Sobre o Projeto**
+
+O **Playtime** é um sistema web desenvolvido para gerenciar lojas de brinquedos, permitindo que clientes comprem produtos, vendedores realizem vendas e gerentes controlem estoque e relatórios.
+
+---
+
+##  **Atores do Sistema**
+
+|    Ator |  Funcionalidades |
+|---------|---------------------|
+|  **Cliente** | Consultar produtos · Realizar cadastro · Comprar produtos |
+|  **Vendedor** | Gerenciar cadastro · Consultar produtos · Realizar vendas · Consultar vendas |
+|  **Gerente** | Atualizar estoque · Gerenciar produtos · Gerar relatórios · Consultar vendas |
+|  **Sistema de Pagamento** | Processamento externo de transações financeiras |
+
+---
+
+##  **Casos de Uso (versão inicial)**
+
+![Diagrama de Casos de Uso](./Diagrama_de_casos_de_uso.jpg)
+
+
+| # | Caso de Uso | Atores |
+|---|-------------|--------|
+| 1 | Consultar produto | Cliente, Vendedor |
+| 2 | Comprar produto | Cliente |
+| 3 | Realizar venda | Vendedor |
+| 4 | Atualizar estoque | Gerente |
+| 5 | Gerenciar produto | Gerente |
+| 6 | Fazer cadastro | Cliente |
+
+---
+
+##  **Tecnologias Utilizadas**
+
+<div align="center">
+
+| Categoria | Tecnologias |
+|-----------|-------------|
+| **Front-end** | Next.js · TypeScript · JavaScript |
+| **Versionamento** | Git · GitHub |
+| **Prototipação** | Figma |
+
+</div>
+
+---
+
+## **Páginas Implementadas**
+
+|  Rota |  Página |  Descrição |
+|---------|-----------|--------------|
+| `/login` | Login | Acesso para usuários |
+| `/menu` | Menu Principal | Navegação entre todas as funcionalidades |
+| `/pesquisa` | Pesquisar Produtos | Busca e visualização de produtos |
+| `/compra` | Finalizar Compra | Carrinho e simulação de compra |
+| `/estoque` | Gestão de Estoque | Gerente atualiza quantidades dos produtos |
+| `/produto` | Gerenciar Produtos | CRUD básico de produtos |
+
+---
+
+## **Como Executar o Projeto**
+
+ Passo a passo
 
 ```bash
+cd playtime
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000) com seu browser para ver o resultado.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
