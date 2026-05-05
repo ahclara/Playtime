@@ -70,6 +70,8 @@ O **Playtime** é um sistema web desenvolvido para gerenciar lojas de brinquedos
  Passo a passo
 
 ```bash
+npm install
+
 cd playtime
 
 npm run dev
