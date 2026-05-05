@@ -1,4 +1,6 @@
 
+
+7c63e5e15d3bc74ceb76dbbad537f5019e9e93a7
 <div align="center">
 
 #  **Playtime**
@@ -45,7 +47,11 @@ O **Playtime** é um sistema web desenvolvido para gerenciar lojas de brinquedos
 
 | Categoria | Tecnologias |
 |-----------|-------------|
+HEAD
 | **Front-end** | Next.js 15 · TypeScript · Tailwind CSS |
+
+| **Front-end** | Next.js · TypeScript · JavaScript |
+7c63e5e15d3bc74ceb76dbbad537f5019e9e93a7
 | **Versionamento** | Git · GitHub |
 | **Prototipação** | Figma |
 
@@ -66,6 +72,7 @@ O **Playtime** é um sistema web desenvolvido para gerenciar lojas de brinquedos
 
 ---
 
+HEAD
 ## **Credenciais**
 
 Vendedor: vendedor@playtime.com / 123456
@@ -76,11 +83,14 @@ Cliente: cliente@email.com / 123456 (ou cadastre um novo)
 
 ---
 
+
+ 7c63e5e15d3bc74ceb76dbbad537f5019e9e93a7
 ## **Como Executar o Projeto**
 
  Passo a passo
 
 ```bash
+HEAD
 # 1. Clone o repositório -
 git clone https://github.com/seu-usuario/playtime.git
 
@@ -92,3 +102,14 @@ npm install
 
 # 4. Execute o servidor de desenvolvimento -
 npm run dev
+
+npm install
+
+cd playtime
+
+npm run dev
+```
+
+Abra [http://localhost:3000](http://localhost:3000) com seu browser para ver o resultado.
+
+7c63e5e15d3bc74ceb76dbbad537f5019e9e93a7
