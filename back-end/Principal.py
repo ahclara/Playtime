@@ -1,9 +1,9 @@
 from __future__ import annotations
 import time 
-from controler.SistemaVendas import SistemaVendas
-from controler.Cliente import Cliente
-from controler.Produto import Produto
-from controler.Venda import Venda
+from SistemaVendas import SistemaVendas
+from Cliente import Cliente
+from Produto import Produto
+from Venda import Venda
 
 sistema = SistemaVendas()
     

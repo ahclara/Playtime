@@ -1,5 +1,5 @@
 from __future__ import annotations
-from controler.Produto import Produto
+from Produto import Produto
 
 class ItemVenda:
     def __init__(self, produto: Produto, quantidade: int): 

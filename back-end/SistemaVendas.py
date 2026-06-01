@@ -1,9 +1,9 @@
 from __future__ import annotations
 from typing import List, Dict, Optional
-from controler.Cliente import Cliente
-from controler.Produto import Produto
-from controler.Venda import Venda
-from controler.ServicoPagamento import ServicoPagamento
+from Cliente import Cliente
+from Produto import Produto
+from Venda import Venda
+from ServicoPagamento import ServicoPagamento
 
 class SistemaVendas:
     def __init__(self):
