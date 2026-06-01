@@ -1,10 +1,10 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import List, Dict, Optional 
-from controler.Cliente import Cliente
-from controler.ItemVenda import ItemVenda
-from controler.Produto import Produto
-from controler.ServicoPagamento import ServicoPagamento
+from Cliente import Cliente
+from ItemVenda import ItemVenda
+from Produto import Produto
+from ServicoPagamento import ServicoPagamento
 
 
 class Venda:
