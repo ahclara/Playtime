@@ -25,7 +25,7 @@ O **Playtime** é um sistema web desenvolvido para gerenciar lojas de brinquedos
 
 ##  **Casos de Uso (versão inicial)**
 
-![Diagrama de Casos de Uso](./Diagrama_de_casos_de_uso.jpg)
+![Diagrama de Casos de Uso](./docs/Diagrama_de_casos_de_uso.jpg)
 
 
 | # | Caso de Uso | Atores |
@@ -42,7 +42,7 @@ O **Playtime** é um sistema web desenvolvido para gerenciar lojas de brinquedos
 
 ##  **FIGMA**
 
-![Figma](./Figma.jpg.jpeg)
+![Figma](./docs/Figma.jpg.jpeg)
 
 ---
 
