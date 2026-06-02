@@ -8,20 +8,18 @@ class ServicoPagamento:
         self.token_autenticacao = token_autenticacao
 
     def processar_pagamento(self, valor: float, dados_cartao: Dict) -> Optional[str]:
-        print(f"Conectando à API: {self.url_api} para processar R${valor:.2f}...")
+        print(f"Processando pagamento de R${valor:.2f}...")
         if valor > 0:
             id_transacao = f"TRANS_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-            print(f"Pagamento processado com sucesso. ID Transação: {id_transacao}")
+            print(f"Pagamento aprovado! ID: {id_transacao}")
             return id_transacao
         else:
-            print("Erro ao processar pagamento: Valor inválido.")
+            print("Erro: Valor inválido")
             return None 
 
     def estornar_pagamento(self, id_transacao: str) -> bool:
-        print(f"Solicitando estorno para a transação: {id_transacao}...")
+        print(f"Estornando transação: {id_transacao}...")
         if id_transacao.startswith("TRANS_"):
-            print("Estorno realizado com sucesso.")
+            print("Estorno realizado com sucesso")
             return True
-        else:
-            print("Erro: ID de transação inválido ou não encontrado.")
-            return False
+        return False

@@ -12,7 +12,7 @@ class Cliente:
         print(f"Cliente '{self.nome}' com ID {self.id_cliente} cadastrado.")
     
     def atualizar_cadastro(self) -> None:
-        print(f"Cadastro do cliente'{self.nome}' atualizado.")
+        print(f"Cadastro do cliente '{self.nome}' atualizado.")
     
     def desativar(self) -> None:
         print(f"Cliente '{self.nome}' (ID: {self.id_cliente}) marcado para desativação.")

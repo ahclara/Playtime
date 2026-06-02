@@ -1,9 +1,14 @@
 from __future__ import annotations
-import time 
-from SistemaVendas import SistemaVendas
-from Cliente import Cliente
-from Produto import Produto
-from Venda import Venda
+import time
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from models.SistemaVendas import SistemaVendas
+from models.Cliente import Cliente
+from models.Produto import Produto
+from models.Venda import Venda
 
 sistema = SistemaVendas()
     
