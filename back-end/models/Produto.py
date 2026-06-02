@@ -13,17 +13,15 @@ class Produto:
             self.estoque += quantidade
             return True
         else:
-            print(f"Erro: Estoque insuficiente para remover {abs(quantidade)} unidades de '{self.nome}'. Estoque atual: {self.estoque}")
             return False
 
     def consultar_detalhes(self) -> Dict:
-        detalhes = {
+        return {
             "ID": self.id_produto,
             "Nome": self.nome,
             "Preço Unitário": self.preco_unitario,
             "Estoque": self.estoque
         }
-        return detalhes
 
     def __str__(self):
         return f"Produto(ID: {self.id_produto}, Nome: {self.nome}, Preço: R${self.preco_unitario:.2f}, Estoque: {self.estoque})"
