@@ -8,7 +8,7 @@ def cadastrar_produto():
     try:
         dados = request.json
         if not dados:
-            return jsonify({"erro": "JSON inválido"}), 400
+            return jsonify({"erro": "JSON invalido"}), 400
         
         produto = sistema.cadastrar_produto(
             nome=dados.get('nome'),
@@ -43,7 +43,7 @@ def buscar_produto(id_produto):
     try:
         produto = sistema.buscar_produto(id_produto)
         if not produto:
-            return jsonify({"erro": "Produto não encontrado"}), 404
+            return jsonify({"erro": "Produto nao encontrado"}), 404
         return jsonify({
             "id": produto.id_produto, 
             "nome": produto.nome, 
@@ -63,7 +63,7 @@ def atualizar_produto(id_produto):
             preco=dados.get('preco_unitario')
         )
         if not sucesso:
-            return jsonify({"erro": "Produto não encontrado"}), 404
+            return jsonify({"erro": "Produto nao encontrado"}), 404
         return jsonify({"mensagem": "Produto atualizado com sucesso"})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
@@ -74,12 +74,19 @@ def atualizar_estoque(id_produto):
         dados = request.json
         produto = sistema.buscar_produto(id_produto)
         if not produto:
-            return jsonify({"erro": "Produto não encontrado"}), 404
+            return jsonify({"erro": "Produto nao encontrado"}), 404
         
         quantidade = dados.get('quantidade', 0)
         sucesso = produto.atualizar_estoque(quantidade)
         if not sucesso:
             return jsonify({"erro": "Estoque insuficiente"}), 400
+        
+        conn = sistema.get_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE produtos SET estoque = %s WHERE id_produto = %s", (produto.estoque, id_produto))
+        conn.commit()
+        cur.close()
+        conn.close()
         
         return jsonify({
             "mensagem": "Estoque atualizado", 
@@ -93,7 +100,7 @@ def deletar_produto(id_produto):
     try:
         sucesso = sistema.deletar_produto(id_produto)
         if not sucesso:
-            return jsonify({"erro": "Produto não encontrado"}), 404
+            return jsonify({"erro": "Produto nao encontrado"}), 404
         return jsonify({"mensagem": "Produto deletado com sucesso"})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

@@ -8,11 +8,11 @@ def criar_venda():
     try:
         dados = request.json
         if not dados:
-            return jsonify({"erro": "JSON inválido"}), 400
+            return jsonify({"erro": "JSON invalido"}), 400
         
         venda = sistema.iniciar_nova_venda(dados.get('cliente_id'))
         if not venda:
-            return jsonify({"erro": "Cliente não encontrado"}), 404
+            return jsonify({"erro": "Cliente nao encontrado"}), 404
         return jsonify({
             "id": venda.id_pedido, 
             "status": venda.status,
@@ -40,7 +40,7 @@ def buscar_venda(id_venda):
     try:
         venda = sistema.buscar_venda(id_venda)
         if not venda:
-            return jsonify({"erro": "Venda não encontrada"}), 404
+            return jsonify({"erro": "Venda nao encontrada"}), 404
         
         itens = [{
             "produto_id": item.produto.id_produto,
@@ -66,7 +66,7 @@ def cancelar_venda(id_venda):
     try:
         sucesso = sistema.cancelar_venda_pendente(id_venda)
         if not sucesso:
-            return jsonify({"erro": "Venda não encontrada ou não pode ser cancelada"}), 404
+            return jsonify({"erro": "Venda nao encontrada ou nao pode ser cancelada"}), 404
         return jsonify({"mensagem": "Venda cancelada com sucesso"})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

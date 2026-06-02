@@ -1,7 +1,6 @@
 import sys
 import os
 
-# Adiciona o caminho da pasta back-end ao Python
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, jsonify
@@ -11,11 +10,13 @@ from routes.Produto_routes import produto_bp
 from routes.Venda_routes import venda_bp
 from routes.ItemVenda_routes import item_venda_bp
 from routes.FinalizarVenda_routes import finalizar_bp
+from database.Conexao import init_db
 
 app = Flask(__name__)
 CORS(app)
 
-# Registrar os blueprints
+init_db()
+
 app.register_blueprint(cliente_bp)
 app.register_blueprint(produto_bp)
 app.register_blueprint(venda_bp)
@@ -27,7 +28,7 @@ def home():
     return jsonify({
         "sistema": "Playtime - Sistema de Loja de Brinquedos",
         "status": "online",
-        "versao": "2.0",
+        "versao": "3.0",
         "endpoints": {
             "clientes": {
                 "GET /clientes": "Listar todos os clientes",
@@ -51,7 +52,7 @@ def home():
                 "DELETE /vendas/<id>": "Cancelar venda pendente"
             },
             "itens_venda": {
-                "POST /vendas/<id>/itens": "Adicionar item à venda",
+                "POST /vendas/<id>/itens": "Adicionar item a venda",
                 "GET /vendas/<id>/itens": "Listar itens da venda",
                 "DELETE /vendas/<id>/itens/<produto_id>": "Remover item da venda"
             },

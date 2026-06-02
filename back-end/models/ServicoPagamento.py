@@ -14,11 +14,11 @@ class ServicoPagamento:
             print(f"Pagamento aprovado! ID: {id_transacao}")
             return id_transacao
         else:
-            print("Erro: Valor inválido")
+            print("Erro: Valor invalido")
             return None 
 
     def estornar_pagamento(self, id_transacao: str) -> bool:
-        print(f"Estornando transação: {id_transacao}...")
+        print(f"Estornando transacao: {id_transacao}...")
         if id_transacao.startswith("TRANS_"):
             print("Estorno realizado com sucesso")
             return True

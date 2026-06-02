@@ -11,9 +11,10 @@ from models.Produto import Produto
 from models.Venda import Venda
 
 sistema = SistemaVendas()
-
+    
 def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    import os
+    os.system('cls' if os.name == 'nt' else 'clear') 
 
 def fazer_cadastro_cliente():
     print("\n______Cadastro de Novo Cliente______")
@@ -26,12 +27,13 @@ def fazer_cadastro_cliente():
 
 def listar_clientes():
     print("\n______Lista de Clientes______")
-    if not sistema.clientes:
+    clientes = sistema.listar_clientes()
+    if not clientes:
         print("Nenhum cliente cadastrado.")
         return
     print("ID | Nome | CPF | Email")
     print("_" * 60)
-    for cliente in sistema.clientes.values():
+    for cliente in clientes:
         print(f"{cliente.id_cliente} | {cliente.nome} | {cliente.cpf} | {cliente.email}")
 
 def atualizar_cadastro_cliente():
@@ -47,6 +49,7 @@ def atualizar_cadastro_cliente():
             novo_email = input(f"Novo E-mail (Atual: {cliente.email}, Deixe em branco para manter): ")
             
             sistema.atualizar_cliente(id_cliente, novo_nome if novo_nome else None, novo_email if novo_email else None)
+            print("Cliente atualizado com sucesso!")
         else:
             print("Cliente não encontrado.")
     except ValueError:
@@ -64,7 +67,10 @@ def deletar_cliente():
             
         confirma = input(f"Tem certeza que deseja DELETAR o cliente {id_cliente}? (S/N): ").upper()
         if confirma == 'S':
-            sistema.deletar_cliente(id_cliente)
+            if sistema.deletar_cliente(id_cliente):
+                print("Cliente deletado com sucesso!")
+            else:
+                print("Cliente não pode ser deletado (possui vendas associadas).")
         else:
             print("Operação cancelada.")
     except ValueError:
@@ -81,22 +87,24 @@ def cadastrar_produto():
             print("ERRO: Preço deve ser positivo e Estoque não pode ser negativo.")
             return
             
-        sistema.cadastrar_produto(nome, preco, estoque)
+        produto = sistema.cadastrar_produto(nome, preco, estoque)
+        print(f"Produto '{produto.nome}' cadastrado com ID {produto.id_produto}")
     except ValueError:
         print("ERRO: Preço ou Estoque inválido.")
 
 def consultar_produto():
     print("\n______Consultar Produtos______")
-    if not sistema.produtos:
+    produtos = sistema.listar_produtos()
+    if not produtos:
         print("Nenhum produto cadastrado.")
         return
 
-    print("ID | Nome | Preço | Estoque")
+    print("ID | Nome | Preco | Estoque")
     print("_" * 60)
-    for prod in sistema.listar_produtos():
+    for prod in produtos:
         detalhes = prod.consultar_detalhes()
-        print(f"{detalhes['ID']} | {detalhes['Nome']} | R${detalhes['Preço Unitário']:.2f} | {detalhes['Estoque']}")
-
+        print(f"{detalhes['ID']} | {detalhes['Nome']} | R${detalhes['Preco Unitario']:.2f} | {detalhes['Estoque']}")
+        
 def atualizar_estoque_produto():
     print("\n______Atualizar Estoque______")
     consultar_produto()
@@ -114,7 +122,18 @@ def atualizar_estoque_produto():
         print(f"Produto selecionado: {produto.nome}. Estoque atual: {produto.estoque}")
         ajuste = int(input("Digite a quantidade de ajuste (+ para adicionar, - para remover): "))
         
-        produto.atualizar_estoque(ajuste) 
+        if produto.atualizar_estoque(ajuste):
+            import psycopg2
+            from database.Conexao import get_connection
+            conn = get_connection()
+            cur = conn.cursor()
+            cur.execute("UPDATE produtos SET estoque = %s WHERE id_produto = %s", (produto.estoque, prod_id))
+            conn.commit()
+            cur.close()
+            conn.close()
+            print(f"Estoque atualizado! Novo estoque: {produto.estoque}")
+        else:
+            print("ERRO: Estoque não pode ficar negativo.")
     except ValueError:
         print("ERRO: ID ou ajuste inválido.")
 
@@ -132,7 +151,10 @@ def atualizar_detalhes_produto():
             
             novo_preco = float(novo_preco_str) if novo_preco_str else None
             
-            sistema.atualizar_detalhes_produto(prod_id, novo_nome if novo_nome else None, novo_preco)
+            if sistema.atualizar_detalhes_produto(prod_id, novo_nome if novo_nome else None, novo_preco):
+                print("Produto atualizado com sucesso!")
+            else:
+                print("Erro ao atualizar produto.")
         else:
             print("Produto não encontrado.")
     except ValueError:
@@ -146,7 +168,10 @@ def deletar_produto():
         prod_id = int(prod_id_str)
         confirma = input(f"Tem certeza que deseja DELETAR o produto {prod_id}? (S/N): ").upper()
         if confirma == 'S':
-            sistema.deletar_produto(prod_id)
+            if sistema.deletar_produto(prod_id):
+                print("Produto deletado com sucesso!")
+            else:
+                print("Erro ao deletar produto.")
         else:
             print("Operação cancelada.")
     except ValueError:
@@ -162,6 +187,7 @@ def realizar_venda():
         venda_atual = sistema.iniciar_nova_venda(id_cliente)
         
         if not venda_atual:
+            print("Cliente não encontrado.")
             return
 
         while True:
@@ -184,24 +210,30 @@ def realizar_venda():
                     print("ERRO: Quantidade deve ser positiva.")
                     continue
                 
-                venda_atual.adicionar_item(produto, quantidade) 
+                if sistema.adicionar_item_venda(venda_atual.id_pedido, prod_id, quantidade):
+                    venda_atualizada = sistema.buscar_venda(venda_atual.id_pedido)
+                    print(f"Item adicionado! Total atual: R${venda_atualizada.valor_total:.2f}")
+                else:
+                    print("ERRO: Não foi possível adicionar o item.")
 
             except ValueError:
                 print("ERRO: Entrada inválida. Tente novamente.")
                 continue
 
-        if not venda_atual.itens:
-            print("Nenhum item adicionado. Compra cancelada e removida do registro.")
-            if venda_atual.id_pedido in sistema.vendas:
-                 del sistema.vendas[venda_atual.id_pedido]
+        venda_atualizada = sistema.buscar_venda(venda_atual.id_pedido)
+        if not venda_atualizada.itens:
+            print("Nenhum item adicionado. Compra cancelada.")
             return
 
-        print(f"\nTotal da Compra {venda_atual.id_pedido}: R${venda_atual.calcular_total():.2f}")
+        print(f"\nTotal da Compra {venda_atualizada.id_pedido}: R${venda_atualizada.valor_total:.2f}")
         
         pagar = input("Deseja prosseguir com o pagamento? (S/N): ").upper()
         if pagar == 'S':
             dados_cartao = {"numero": "4111...", "cvv": input("Simulação CVV: ")} 
-            venda_atual.finalizar_venda(dados_cartao)
+            if sistema.finalizar_venda(venda_atual.id_pedido, dados_cartao):
+                print("Venda finalizada com sucesso!")
+            else:
+                print("Falha no pagamento.")
         else:
             print("Pagamento não efetuado. Venda permanece pendente.")
 
@@ -210,11 +242,12 @@ def realizar_venda():
 
 def consultar_venda():
     print("\n______Consultar Vendas______")
-    if not sistema.vendas:
+    vendas_dict = sistema.vendas
+    if not vendas_dict:
         print("Nenhuma venda finalizada/registrada.")
         return
         
-    for venda in sistema.vendas.values():
+    for venda in vendas_dict.values():
         print("=" * 60)
         print(venda)
 
@@ -238,7 +271,7 @@ def gerenciar_cadastro():
             break
         else:
             print("Opção inválida.")
-        input("Pressione Enter para continuar... :)")
+        input("Pressione Enter para continuar...")
 
 def menu_cliente():
     while True:
@@ -263,7 +296,7 @@ def menu_cliente():
             break
         else:
             print("Opção inválida.")
-        input("Pressione Enter para continuar... :)")
+        input("Pressione Enter para continuar...")
 
 def menu_vendedor():
     while True:
@@ -288,7 +321,94 @@ def menu_vendedor():
             break
         else:
             print("Opção inválida.")
-        input("Pressione Enter para continuar... :)")
+        input("Pressione Enter para continuar...")
+
+def gerenciar_produto_menu():
+    while True:
+        clear_screen()
+        print("\nGerenciar Produtos")
+        print("1. Cadastrar Novo Produto")
+        print("2. Consultar Produtos")
+        print("3. Alterar Detalhes de Produto")
+        print("4. Deletar Produto")
+        print("0. Voltar")
+        opcao = input("Escolha uma opção: ")
+        
+        if opcao == '1':
+            cadastrar_produto()
+        elif opcao == '2':
+            consultar_produto()
+        elif opcao == '3':
+            atualizar_detalhes_produto()
+        elif opcao == '4':
+            deletar_produto()
+        elif opcao == '0':
+            break
+        else:
+            print("Opção inválida.")
+        input("Pressione Enter para continuar...")
+
+def gerenciar_cadastro_completo():
+    while True:
+        clear_screen()
+        print("\n Gerenciar Cadastro")
+        print("1. Cadastrar Novo Cliente")
+        print("2. Listar Clientes")
+        print("3. Atualizar Cadastro de Cliente")
+        print("4. Deletar Cliente")
+        print("0. Voltar")
+        opcao = input("Escolha uma opção: ")
+        
+        if opcao == '1':
+            fazer_cadastro_cliente()
+        elif opcao == '2':
+            listar_clientes()
+        elif opcao == '3':
+            atualizar_cadastro_cliente()
+        elif opcao == '4':
+            deletar_cliente()
+        elif opcao == '0':
+            break
+        else:
+            print("Opção inválida.")
+        input("Pressione Enter para continuar...")
+
+def cancelar_venda_menu():
+    print("\n______Cancelar Venda Pendente______")
+    
+    vendas_dict = sistema.vendas
+    vendas_pendentes = [v for v in vendas_dict.values() if v.status == 'pendente']
+    if not vendas_pendentes:
+        print("Nenhuma venda pendente para cancelar.")
+        return
+
+    print("Vendas Pendentes:")
+    for v in vendas_pendentes:
+        print(f"ID: {v.id_pedido} | Cliente: {v.cliente.nome} | Total: R${v.valor_total:.2f}")
+
+    id_venda_str = input("ID da venda para cancelar (ou '0' para Voltar): ")
+    if id_venda_str == '0':
+        return
+        
+    try:
+        id_venda = int(id_venda_str)
+        if sistema.cancelar_venda_pendente(id_venda):
+            print("Venda cancelada com sucesso!")
+        else:
+            print("Erro ao cancelar venda.")
+    except ValueError:
+        print("ID inválido.")
+
+def gerar_relatorios():
+    print("\n______Gerar Relatórios______")
+    
+    print(f"Número de Clientes Cadastrados: {sistema.get_total_clientes()}")
+    print(f"Número de Vendas Finalizadas: {sistema.get_total_vendas_finalizadas()}")
+    print(f"Total Arrecadado: R${sistema.get_total_arrecadado():.2f}")
+    
+    produtos = sistema.listar_produtos()
+    produtos_em_estoque = sum(p.estoque for p in produtos)
+    print(f"Total de Produtos em Estoque: {produtos_em_estoque}")
 
 def menu_gerente():
     while True:
@@ -322,91 +442,7 @@ def menu_gerente():
             break
         else:
             print("Opção inválida.")
-        input("Pressione Enter para continuar... :)")
-
-def gerenciar_produto_menu():
-    while True:
-        clear_screen()
-        print("\nGerenciar Produtos")
-        print("1. Cadastrar Novo Produto")
-        print("2. Consultar Produtos")
-        print("3. Alterar Detalhes de Produto")
-        print("4. Deletar Produto")
-        print("0. Voltar")
-        opcao = input("Escolha uma opção: ")
-        
-        if opcao == '1':
-            cadastrar_produto()
-        elif opcao == '2':
-            consultar_produto()
-        elif opcao == '3':
-            atualizar_detalhes_produto()
-        elif opcao == '4':
-            deletar_produto()
-        elif opcao == '0':
-            break
-        else:
-            print("Opção inválida.")
-        input("Pressione Enter para continuar... :)")
-
-def gerenciar_cadastro_completo():
-    while True:
-        clear_screen()
-        print("\n Gerenciar Cadastro")
-        print("1. Cadastrar Novo Cliente")
-        print("2. Listar Clientes")
-        print("3. Atualizar Cadastro de Cliente")
-        print("4. Deletar Cliente")
-        print("0. Voltar")
-        opcao = input("Escolha uma opção: ")
-        
-        if opcao == '1':
-            fazer_cadastro_cliente()
-        elif opcao == '2':
-            listar_clientes()
-        elif opcao == '3':
-            atualizar_cadastro_cliente()
-        elif opcao == '4':
-            deletar_cliente()
-        elif opcao == '0':
-            break
-        else:
-            print("Opção inválida.")
-        input("Pressione Enter para continuar... :)")
-
-def cancelar_venda_menu():
-    print("\n______Cancelar Venda Pendente______")
-    
-    vendas_pendentes = [v for v in sistema.vendas.values() if v.status == 'pendente']
-    if not vendas_pendentes:
-        print("Nenhuma venda pendente para cancelar.")
-        return
-
-    print("Vendas Pendentes:")
-    for v in vendas_pendentes:
-        print(f"ID: {v.id_pedido} | Cliente: {v.cliente.nome} | Total: R${v.valor_total:.2f}")
-
-    id_venda_str = input("ID da venda para cancelar (ou '0' para Voltar): ")
-    if id_venda_str == '0':
-        return
-        
-    try:
-        id_venda = int(id_venda_str)
-        sistema.cancelar_venda_pendente(id_venda)
-    except ValueError:
-        print("ID inválido.")
-
-def gerar_relatorios():
-    print("\n______Gerar Relatórios______")
-    
-    vendas_pagas = [v for v in sistema.vendas.values() if v.status == 'pago']
-    total_vendas = sum(v.valor_total for v in vendas_pagas)
-    produtos_em_estoque = sum(p.estoque for p in sistema.produtos.values())
-    
-    print(f"Número de Clientes Cadastrados: {len(sistema.clientes)}")
-    print(f"Número de Vendas Finalizadas: {len(vendas_pagas)}")
-    print(f"Total Arrecadado: R${total_vendas:.2f}")
-    print(f"Total de Produtos em Estoque: {produtos_em_estoque}")
+        input("Pressione Enter para continuar...")
 
 def main_menu():
     while True:
@@ -429,7 +465,7 @@ def main_menu():
         elif perfil == '3':
             menu_gerente()
         elif perfil == '0':
-            print("\nEncerrando o Sistema. Até logo! :))")
+            print("\nEncerrando o Sistema. Até logo!")
             break
         else:
             print("Opção de perfil inválida. Tente novamente.")

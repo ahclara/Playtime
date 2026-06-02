@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import Dict, Optional 
 
 class Cliente:
     def __init__(self, id_cliente: int, nome: str, cpf: str, email: str):
@@ -15,7 +14,7 @@ class Cliente:
         print(f"Cadastro do cliente '{self.nome}' atualizado.")
     
     def desativar(self) -> None:
-        print(f"Cliente '{self.nome}' (ID: {self.id_cliente}) marcado para desativação.")
+        print(f"Cliente '{self.nome}' (ID: {self.id_cliente}) marcado para desativacao.")
 
     def __str__(self):
         return f"Cliente(ID: {self.id_cliente}, Nome: {self.nome}, CPF: {self.cpf})"

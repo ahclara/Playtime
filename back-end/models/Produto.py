@@ -19,9 +19,9 @@ class Produto:
         return {
             "ID": self.id_produto,
             "Nome": self.nome,
-            "Preço Unitário": self.preco_unitario,
+            "Preco Unitario": self.preco_unitario,
             "Estoque": self.estoque
         }
 
     def __str__(self):
-        return f"Produto(ID: {self.id_produto}, Nome: {self.nome}, Preço: R${self.preco_unitario:.2f}, Estoque: {self.estoque})"
+        return f"Produto(ID: {self.id_produto}, Nome: {self.nome}, Preco: R${self.preco_unitario:.2f}, Estoque: {self.estoque})"

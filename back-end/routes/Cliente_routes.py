@@ -8,7 +8,7 @@ def cadastrar_cliente():
     try:
         dados = request.json
         if not dados:
-            return jsonify({"erro": "JSON inválido"}), 400
+            return jsonify({"erro": "JSON invalido"}), 400
         
         cliente = sistema.cadastrar_cliente(
             nome=dados.get('nome'),
@@ -31,7 +31,7 @@ def listar_clientes():
             "nome": c.nome, 
             "cpf": c.cpf, 
             "email": c.email
-        } for c in sistema.clientes.values()]
+        } for c in sistema.listar_clientes()]
         return jsonify(clientes)
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
@@ -41,7 +41,7 @@ def buscar_cliente(id_cliente):
     try:
         cliente = sistema.buscar_cliente(id_cliente)
         if not cliente:
-            return jsonify({"erro": "Cliente não encontrado"}), 404
+            return jsonify({"erro": "Cliente nao encontrado"}), 404
         return jsonify({
             "id": cliente.id_cliente, 
             "nome": cliente.nome, 
@@ -61,7 +61,7 @@ def atualizar_cliente(id_cliente):
             email=dados.get('email')
         )
         if not sucesso:
-            return jsonify({"erro": "Cliente não encontrado"}), 404
+            return jsonify({"erro": "Cliente nao encontrado"}), 404
         return jsonify({"mensagem": "Cliente atualizado com sucesso"})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
@@ -71,7 +71,7 @@ def deletar_cliente(id_cliente):
     try:
         sucesso = sistema.deletar_cliente(id_cliente)
         if not sucesso:
-            return jsonify({"erro": "Cliente não encontrado ou possui vendas"}), 404
+            return jsonify({"erro": "Cliente nao encontrado ou possui vendas"}), 404
         return jsonify({"mensagem": "Cliente deletado com sucesso"})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

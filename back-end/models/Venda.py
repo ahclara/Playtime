@@ -23,7 +23,7 @@ class Venda:
             self.itens.append(item)
             produto.atualizar_estoque(-quantidade)
             self.calcular_total()
-            print(f"Item '{produto.nome}' adicionado à Venda {self.id_pedido}.")
+            print(f"Item '{produto.nome}' adicionado a Venda {self.id_pedido}.")
         else:
             print(f"ERRO: Estoque insuficiente de '{produto.nome}'")
 
