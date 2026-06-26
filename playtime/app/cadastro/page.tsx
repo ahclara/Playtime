@@ -5,11 +5,38 @@ import { useState } from "react";
 export default function CadastroPage() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [cpf, setCpf] = useState("");
 
   const handleCadastro = (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = "/menu";
+
+    const dadosUsuario = {
+      nome: nome,
+      email: email,
+      cpf: cpf
+    };
+
+    fetch('http://127.0.0.1:5000/clientes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dadosUsuario),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erro ao cadastrar usuário no servidor');
+        }
+        return response.json();
+      })
+      .then(dados => {
+        console.log('Usuário cadastrado com sucesso!', dados);
+        window.location.href = "/menu"; 
+      })
+      .catch(error => {
+        console.error('Erro no cadastro:', error);
+        alert('Erro ao realizar o cadastro. Verifique se o seu Back-end está ligado!');
+      });
   };
 
   return (
@@ -28,6 +55,7 @@ export default function CadastroPage() {
               required
             />
           </div>
+          
           <div className="mb-4">
             <label className="block text-gray-700 mb-2">E-mail</label>
             <input
@@ -38,16 +66,20 @@ export default function CadastroPage() {
               required
             />
           </div>
+          
+          {/* Aqui aconteceu a mágica: transformamos a caixinha de Senha em CPF */}
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Senha</label>
+            <label className="block text-gray-700 mb-2">CPF</label>
             <input
-              type="password"
+              type="text" // Mudamos para text para o CPF aparecer enquanto digita
+              placeholder="000.000.000-00"
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              value={cpf}
+              onChange={(e) => setCpf(e.target.value)}
               required
             />
           </div>
+          
           <button className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700">
             Cadastrar
           </button>

@@ -8,14 +8,39 @@ export default function CompraPage() {
     { id: 2, nome: "Carrinho F1", preco: 89.90, quantidade: 1 },
   ]);
 
-  const total = carrinho.reduce((s, i) => s + i.preco * i.quantidade, 0);
+  const total = carrinho.reduce((s, i) => s + Number(i.preco) * i.quantidade, 0);
   const [comprou, setComprou] = useState(false);
 
   const finalizarCompra = () => {
-    setComprou(true);
-    setTimeout(() => {
-      window.location.href = "/menu";
-    }, 2000);
+    const dadosCompra = {
+      itens: carrinho,
+      valor_total: total
+    };
+
+    fetch('http://127.0.0.1:5000/vendas/2/finalizar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dadosCompra),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erro ao registrar a compra no servidor');
+        }
+        return response.json();
+      })
+      .then(dados => {
+        console.log('Compra gravada no banco com sucesso!', dados);
+        setComprou(true);
+        setTimeout(() => {
+          window.location.href = "/menu";
+        }, 2000);
+      })
+      .catch(error => {
+        console.error('Erro na finalização da compra:', error);
+        alert('Erro ao processar a compra!');
+      });
   };
 
   if (comprou) {
@@ -48,11 +73,11 @@ export default function CompraPage() {
             <div key={item.id} className="flex justify-between items-center p-4 border-b">
               <div>
                 <p className="font-medium">{item.nome}</p>
-                <p className="text-sm text-gray-500">R$ {item.preco.toFixed(2)}</p>
+                <p className="text-sm text-gray-500">R$ {Number(item.preco).toFixed(2)}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span>Qtd: {item.quantidade}</span>
-                <span className="font-medium">R$ {(item.preco * item.quantidade).toFixed(2)}</span>
+                <span className="font-medium">R$ {(Number(item.preco) * item.quantidade).toFixed(2)}</span>
               </div>
             </div>
           ))}
