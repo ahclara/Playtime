@@ -1,20 +1,59 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const produtosIniciais = [
-  { id: 1, nome: "Boneca Ana", categoria: "Bonecas", preco: 49.99, quantidade: 15 },
-  { id: 2, nome: "Carrinho F1", categoria: "Veículos", preco: 89.90, quantidade: 8 },
-  { id: 3, nome: "Lego Castelo", categoria: "Montar", preco: 199.99, quantidade: 5 },
-  { id: 4, nome: "Pelúcia Ursinho", categoria: "Pelúcias", preco: 39.90, quantidade: 12 },
-];
+interface Produto {
+  id: number;
+  nome: string;
+  categoria: string;
+  preco: number | string;
+  estoque: number; 
+}
 
 export default function EstoquePage() {
-  const [produtos, setProdutos] = useState(produtosIniciais);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
 
-  const atualizarQuantidade = (id: number, novaQtd: number) => {
-    if (novaQtd >= 0) {
-      setProdutos(produtos.map(p => p.id === id ? { ...p, quantidade: novaQtd } : p));
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:5000/produtos')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erro ao buscar produtos para o estoque');
+        }
+        return response.json();
+      })
+      .then(dados => {
+        setProdutos(dados); 
+      })
+      .catch(error => {
+        console.error('Erro na conexão do estoque:', error);
+      });
+  }, []);
+
+  const atualizarQuantidade = (id: number, novoEstoque: number) => {
+    if (novoEstoque >= 0) {
+      fetch(`http://127.0.0.1:5000/produtos/${id}/estoque`, {
+        method: 'PATCH', 
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({ quantidade: novoEstoque }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Erro ao atualizar estoque no servidor');
+          }
+          return response.json();
+        })
+        .then(dados => {
+          console.log('Estoque atualizado com sucesso no banco!', dados);
+          setProdutos(produtos.map(p => p.id === id ? { ...p, estoque: novoEstoque } : p));
+        })
+        .catch(error => {
+          console.error('Erro ao atualizar estoque:', error);
+          alert('Erro ao salvar no banco. Verifique se o servidor respondeu corretamente!');
+        });
     }
   };
 
@@ -47,24 +86,25 @@ export default function EstoquePage() {
               {produtos.map((p) => (
                 <tr key={p.id} className="border-t">
                   <td className="p-3 font-medium">{p.nome}</td>
-                  <td className="p-3 text-gray-600">{p.categoria}</td>
-                  <td className="p-3 text-right">R$ {p.preco.toFixed(2)}</td>
+                  <td className="p-3 text-gray-600">{p.categoria || "Geral"}</td>
+                  <td className="p-3 text-right">R$ {Number(p.preco).toFixed(2)}</td>
                   <td className="p-3 text-center">
-                    <span className={p.quantidade < 5 ? "text-red-600 font-bold" : ""}>
-                      {p.quantidade}
+                    <span className={p.estoque < 5 ? "text-red-600 font-bold" : ""}>
+                      {p.estoque}
                     </span>
                   </td>
+                  
                   <td className="p-3 text-center">
                     <div className="flex justify-center gap-2">
                       <button
-                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                        onClick={() => atualizarQuantidade(p.id, p.quantidade + 1)}
+                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 font-bold"
+                        onClick={() => atualizarQuantidade(p.id, p.estoque + 1)}
                       >
                         +1
                       </button>
                       <button
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                        onClick={() => atualizarQuantidade(p.id, p.quantidade - 1)}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 font-bold"
+                        onClick={() => atualizarQuantidade(p.id, p.estoque - 1)}
                       >
                         -1
                       </button>

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Produto {
   id: number;
@@ -15,6 +15,23 @@ export default function ProdutoPage() {
     { id: 1, nome: "Boneca Ana", categoria: "Bonecas", preco: 49.99, quantidade: 15 },
     { id: 2, nome: "Carrinho F1", categoria: "Veículos", preco: 89.90, quantidade: 8 },
   ]);
+ // ver se deve mudar a funcao produtopage (tal qual o banco de dados).
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:5000/produtos')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erro ao buscar produtos do servidor');
+        }
+        return response.json();
+      })
+      .then(dados => {
+        setProdutos(dados); 
+      })
+      .catch(error => {
+        console.error('Ih, deu erro na conexão:', error);
+      });
+  }, []);
   
   const [mostrarForm, setMostrarForm] = useState(false);
   const [novoProduto, setNovoProduto] = useState({ nome: "", categoria: "", preco: "", quantidade: "" });
@@ -127,7 +144,7 @@ export default function ProdutoPage() {
                   <td className="p-3 text-gray-500">#{p.id}</td>
                   <td className="p-3 font-medium">{p.nome}</td>
                   <td className="p-3 text-gray-600">{p.categoria}</td>
-                  <td className="p-3 text-right">R$ {p.preco.toFixed(2)}</td>
+                  <td className="p-3 text-right">R$ {Number(p.preco).toFixed(2)}</td>
                   <td className="p-3 text-center">{p.quantidade}</td>
                   <td className="p-3 text-center">
                     <button
