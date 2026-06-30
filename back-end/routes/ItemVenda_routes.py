@@ -8,18 +8,18 @@ def adicionar_item(id_venda):
     try:
         dados = request.json
         if not dados:
-            return jsonify({"erro": "JSON invalido"}), 400
+            return jsonify({"erro": "JSON inválido"}), 400
         
         produto_id = dados.get('produto_id')
         quantidade = dados.get('quantidade', 1)
         
         if not produto_id:
-            return jsonify({"erro": "produto_id e obrigatorio"}), 400
+            return jsonify({"erro": "produto_id é obrigatório"}), 400
         
         sucesso = sistema.adicionar_item_venda(id_venda, produto_id, quantidade)
         
         if not sucesso:
-            return jsonify({"erro": "Venda nao encontrada, produto nao encontrado ou estoque insuficiente"}), 400
+            return jsonify({"erro": "Venda não encontrada, produto não encontrado ou estoque insuficiente"}), 400
         
         venda = sistema.buscar_venda(id_venda)
         
@@ -35,7 +35,7 @@ def listar_itens_venda(id_venda):
     try:
         venda = sistema.buscar_venda(id_venda)
         if not venda:
-            return jsonify({"erro": "Venda nao encontrada"}), 404
+            return jsonify({"erro": "Venda não encontrada"}), 404
         
         itens = [{
             "produto_id": item.produto.id_produto,
@@ -54,7 +54,7 @@ def remover_item(id_venda, produto_id):
     try:
         venda = sistema.buscar_venda(id_venda)
         if not venda:
-            return jsonify({"erro": "Venda nao encontrada"}), 404
+            return jsonify({"erro": "Venda não encontrada"}), 404
         
         for item in venda.itens:
             if item.produto.id_produto == produto_id:
@@ -75,6 +75,6 @@ def remover_item(id_venda, produto_id):
                     "total_atual": venda.valor_total
                 }), 200
         
-        return jsonify({"erro": "Item nao encontrado nesta venda"}), 404
+        return jsonify({"erro": "Item não encontrado nesta venda"}), 404
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

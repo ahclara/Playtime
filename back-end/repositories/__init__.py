@@ -1,0 +1,4 @@
+from repositories.ClienteRepository import ClienteRepository
+from repositories.ProdutoRepository import ProdutoRepository
+from repositories.VendaRepository import VendaRepository
+from repositories.CancelamentoRepository import CancelamentoRepository
