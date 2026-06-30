@@ -4,11 +4,21 @@ import { useState } from "react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [cpf, setCpf] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = "/menu";
+    const dadosLogin = {
+      email: email,
+      cpf: cpf
+    };
+
+    console.log("Tentando fazer login com:", dadosLogin);
+    if (email && cpf) {
+      window.location.href = "/menu";
+    } else {
+      alert("Por favor, preencha todos os campos!");
+    }
   };
 
   return (
@@ -28,17 +38,20 @@ export default function LoginPage() {
               required
             />
           </div>
+          
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Senha</label>
+            <label className="block text-gray-700 mb-2">CPF</label>
             <input
-              type="password"
+              type="text"
+              placeholder="000.000.000-00"
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              value={cpf}
+              onChange={(e) => setCpf(e.target.value)}
               required
             />
           </div>
-          <button className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">
+          
+          <button className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 font-bold">
             Entrar
           </button>
         </form>
@@ -48,7 +61,7 @@ export default function LoginPage() {
         </p>
         
         <div className="mt-4 pt-4 border-t text-center text-xs text-gray-400">
-          <p>Demonstração - Clique em Entrar para acessar</p>
+          <p>Utilize seu E-mail e CPF para acessar</p>
         </div>
       </div>
     </div>
