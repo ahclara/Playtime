@@ -1,23 +1,25 @@
-from __future__ import annotations
+from datetime import datetime
 
 class Cliente:
-    def __init__(self, id_cliente: int, nome: str, cpf: str, email: str):
-        self.id_cliente = id_cliente 
-        self.nome = nome 
-        self.cpf = cpf 
-        self.email = email 
-
-    def cadastrar(self) -> None:
-        print(f"Cliente '{self.nome}' com ID {self.id_cliente} cadastrado.")
+    """Entidade Cliente"""
     
-    def atualizar_cadastro(self) -> None:
-        print(f"Cadastro do cliente '{self.nome}' atualizado.")
+    def __init__(self, nome, cpf, email, id_cliente=None, ativo=True):
+        self.id_cliente = id_cliente
+        self.nome = nome
+        self.cpf = cpf
+        self.email = email
+        self.ativo = ativo
+        self.data_cadastro = datetime.now()
     
-    def desativar(self) -> None:
-        print(f"Cliente '{self.nome}' (ID: {self.id_cliente}) marcado para desativacao.")
-
+    def to_dict(self):
+        return {
+            'id_cliente': self.id_cliente,
+            'nome': self.nome,
+            'cpf': self.cpf,
+            'email': self.email,
+            'ativo': self.ativo,
+            'data_cadastro': self.data_cadastro.isoformat() if self.data_cadastro else None
+        }
+    
     def __str__(self):
-        return f"Cliente(ID: {self.id_cliente}, Nome: {self.nome}, CPF: {self.cpf})"
-
-    def __repr__(self):
-        return f"Cliente(ID: {self.id_cliente}, Nome: {self.nome})"
+        return f"Cliente({self.nome})"

@@ -1,0 +1,6 @@
+from controllers.ClienteController import cliente_bp
+from controllers.ProdutoController import produto_bp
+from controllers.VendaController import venda_bp
+from controllers.CancelamentoController import cancelamento_bp
+from controllers.RelatorioController import relatorio_bp
+from controllers.AuthController import auth_bp
