@@ -42,13 +42,13 @@ O **Playtime** é um sistema web completo para gerenciamento de lojas de brinque
 | 15 | Produtos mais vendidos | Gerente | 
 | 16 | Processar pagamento | Sistema Pagamento | 
 
-![Diagrama de Casos de Uso](./Casos_de_uso.png)
+![Diagrama de Casos de Uso](./docs/Casos_de_uso.png)
 
 ---
 
 ## 🗄️ **Diagrama de Classes (Back-end)**
 
-![Diagrama de Classes](./Diagrama_de_classes.png)
+![Diagrama de Classes](./docs/Diagrama_de_classes.png)
 
 ### Entidades principais:
 
