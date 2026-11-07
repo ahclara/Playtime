@@ -22,9 +22,10 @@ CORS(app)
 init_db()
 
 # Registra Blueprints
-app.register_blueprint(cliente_bp)
-app.register_blueprint(produto_bp)
-app.register_blueprint(venda_bp)
+# Registra Blueprints
+app.register_blueprint(cliente_bp, url_prefix='/api')
+app.register_blueprint(produto_bp, url_prefix='/api')
+app.register_blueprint(venda_bp, url_prefix='/api')
 app.register_blueprint(auth_bp)
 app.register_blueprint(relatorio_bp)
 

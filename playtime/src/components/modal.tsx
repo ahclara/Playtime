@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { FaTimes } from 'react-icons/fa';
 
 interface ModalProps {
   isOpen: boolean;
@@ -9,23 +10,56 @@ interface ModalProps {
   children: ReactNode;
   onConfirm?: () => void;
   confirmText?: string;
+  cancelText?: string;
+  danger?: boolean;
+  loading?: boolean;
+  wide?: boolean;
 }
 
-export default function Modal({ isOpen, onClose, title, children, onConfirm, confirmText = 'Confirmar' }: ModalProps) {
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  onConfirm,
+  confirmText = 'Confirmar',
+  cancelText = 'Cancelar',
+  danger = false,
+  loading = false,
+  wide = false,
+}: ModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center border-b p-4">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal-box paper" style={wide ? { maxWidth: 640 } : undefined} role="dialog" aria-modal="true" aria-label={title}>
+        <div className="modal-head">
+          <h3>{title}</h3>
+          <button onClick={onClose} className="modal-close" aria-label="Fechar">
+            <FaTimes />
+          </button>
         </div>
-        <div className="p-4">{children}</div>
-        <div className="flex justify-end gap-2 border-t p-4">
-          <button onClick={onClose} className="btn btn-outline">Cancelar</button>
+        <div className="modal-body">{children}</div>
+        <div className="modal-foot">
+          <button onClick={onClose} className="btn btn-outline btn-sm">
+            {onConfirm ? cancelText : 'Fechar'}
+          </button>
           {onConfirm && (
-            <button onClick={onConfirm} className="btn btn-primary">{confirmText}</button>
+            <button onClick={onConfirm} disabled={loading} className={`btn btn-sm ${danger ? 'btn-danger' : 'btn-primary'}`}>
+              {loading ? 'Aguarde...' : confirmText}
+            </button>
           )}
         </div>
       </div>

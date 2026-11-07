@@ -1,81 +1,114 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { relatoriosApi } from '@/services/api';
 import toast from 'react-hot-toast';
+import { relatoriosApi } from '@/services/api';
+import { formatBRL } from '@/lib/format';
+import Loader from '@/components/Loader';
+import { ToyThumb } from '@/components/ToyArt';
+
+function Ranking<T>({
+  titulo,
+  itens,
+  valor,
+  rotulo,
+  render,
+  cor,
+}: {
+  titulo: string;
+  itens: T[];
+  valor: (i: T) => number;
+  rotulo: (i: T) => string;
+  render: (i: T, idx: number) => React.ReactNode;
+  cor: string;
+}) {
+  const max = Math.max(1, ...itens.map(valor));
+  return (
+    <section className="paper p-6">
+      <h3 className="display text-2xl mb-4">{titulo}</h3>
+      {itens.length === 0 ? (
+        <p className="text-sm text-[#7d6b62]">Nenhum dado ainda.</p>
+      ) : (
+        <ol className="space-y-4">
+          {itens.map((item, idx) => (
+            <li key={idx}>
+              <div className="flex items-center gap-3 mb-1.5">
+                <span className="display w-7 text-xl text-[#7d6b62]">{idx + 1}</span>
+                {render(item, idx)}
+                <span className="mono text-sm tabular-nums whitespace-nowrap">{rotulo(item)}</span>
+              </div>
+              <div className="ml-10 h-3 rounded-full border-2 border-[var(--ink)] bg-[#fffaf0] overflow-hidden">
+                <div className="h-full" style={{ width: `${(valor(item) / max) * 100}%`, background: cor }} />
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
 
 export default function AdminRelatoriosPage() {
   const [geral, setGeral] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await relatoriosApi.geral();
-        setGeral(data);
-      } catch (err: any) {
-        toast.error(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    relatoriosApi
+      .geral()
+      .then(setGeral)
+      .catch((err) => toast.error(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="text-center py-12">Carregando relatórios...</div>;
-  if (!geral) return <div className="text-center py-12 text-gray-500">Erro ao carregar relatórios.</div>;
+  if (loading) return <Loader label="Calculando relatórios..." />;
+  if (!geral)
+    return (
+      <div className="paper empty">
+        <p className="display">Erro ao carregar</p>
+        <p>Não foi possível buscar os relatórios.</p>
+      </div>
+    );
+
+  const numeros = [
+    { l: 'Clientes', v: geral.total_clientes || 0 },
+    { l: 'Produtos', v: geral.total_produtos || 0 },
+    { l: 'Vendas concluídas', v: geral.total_vendas_concluidas || 0 },
+    { l: 'Total arrecadado', v: formatBRL(geral.total_arrecadado) },
+  ];
 
   return (
-    <div>
-      <h3 className="text-xl font-semibold mb-4">Relatórios</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Resumo */}
-        <div className="card p-4">
-          <h4 className="font-semibold text-lg mb-2">Resumo</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between"><span>Clientes</span><span>{geral.total_clientes || 0}</span></div>
-            <div className="flex justify-between"><span>Produtos</span><span>{geral.total_produtos || 0}</span></div>
-            <div className="flex justify-between"><span>Vendas concluídas</span><span>{geral.total_vendas_concluidas || 0}</span></div>
-            <div className="flex justify-between font-semibold">
-              <span>Total arrecadado</span>
-              <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(geral.total_arrecadado || 0)}</span>
-            </div>
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {numeros.map((n, i) => (
+          <div key={n.l} className="paper p-5" style={{ background: i === 3 ? 'var(--hazard)' : undefined }}>
+            <p className="mono text-[0.7rem] tracking-[0.16em] uppercase text-[#5b4d46]">{n.l}</p>
+            <p className="display text-[2rem] mt-2 leading-none">{n.v}</p>
           </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Produtos mais vendidos */}
-        <div className="card p-4">
-          <h4 className="font-semibold text-lg mb-2">Produtos mais vendidos</h4>
-          {geral.produtos_mais_vendidos && geral.produtos_mais_vendidos.length > 0 ? (
-            <ul className="space-y-1">
-              {geral.produtos_mais_vendidos.map((p: any, i: number) => (
-                <li key={i} className="flex justify-between text-sm">
-                  <span>{p.nome}</span>
-                  <span>{p.total_vendido} und</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500 text-sm">Nenhum dado.</p>
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Ranking
+          titulo="Produtos mais vendidos"
+          itens={geral.produtos_mais_vendidos || []}
+          valor={(p: any) => Number(p.total_vendido) || 0}
+          rotulo={(p: any) => `${p.total_vendido} un`}
+          cor="var(--red)"
+          render={(p: any, i) => (
+            <>
+              <ToyThumb nome={p.nome} id={i} size={32} />
+              <span className="flex-1 font-semibold truncate">{p.nome}</span>
+            </>
           )}
-        </div>
-
-        {/* Clientes top */}
-        <div className="card p-4">
-          <h4 className="font-semibold text-lg mb-2">Clientes top</h4>
-          {geral.clientes_top && geral.clientes_top.length > 0 ? (
-            <ul className="space-y-1">
-              {geral.clientes_top.map((c: any, i: number) => (
-                <li key={i} className="flex justify-between text-sm">
-                  <span>{c.nome}</span>
-                  <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(c.total_gasto)}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500 text-sm">Nenhum dado.</p>
-          )}
-        </div>
+        />
+        <Ranking
+          titulo="Melhores clientes"
+          itens={geral.clientes_top || []}
+          valor={(c: any) => Number(c.total_gasto) || 0}
+          rotulo={(c: any) => formatBRL(c.total_gasto)}
+          cor="var(--teal)"
+          render={(c: any) => <span className="flex-1 font-semibold truncate">{c.nome}</span>}
+        />
       </div>
     </div>
   );

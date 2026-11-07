@@ -1,14 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { FaEye, FaCheck } from 'react-icons/fa';
 import { Venda } from '@/types';
 import { vendasApi } from '@/services/api';
-import toast from 'react-hot-toast';
-import { FaEye } from 'react-icons/fa';
+import { formatBRL, formatData, statusBadge } from '@/lib/format';
+import Loader from '@/components/Loader';
+import ToyBoxArt from '@/components/ToyBoxArt';
+import VendaDetalhe from '@/components/VendaDetalhe';
 
 export default function ComprasPage() {
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [loading, setLoading] = useState(true);
+  const [detalhe, setDetalhe] = useState<number | null>(null);
+  const fecharDetalhe = useCallback(() => setDetalhe(null), []);
 
   const loadCompras = async () => {
     try {
@@ -35,48 +42,74 @@ export default function ComprasPage() {
     }
   };
 
+  const gasto = vendas.filter((v) => v.status === 'pago').reduce((s, v) => s + Number(v.valor_total), 0);
+  const pendentes = vendas.filter((v) => v.status === 'pendente').length;
+
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Minhas Compras</h2>
-      <div className="card overflow-hidden">
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <p className="eyebrow mb-2">Histórico</p>
+          <h1 className="page-title">Minhas compras</h1>
+        </div>
+        {!loading && vendas.length > 0 && (
+          <div className="flex gap-6">
+            <div>
+              <p className="display text-3xl text-[var(--hazard)] text-shadow-ink">{formatBRL(gasto)}</p>
+              <p className="mono text-[0.7rem] tracking-[0.16em] uppercase text-[var(--muted)]">em compras pagas</p>
+            </div>
+            <div>
+              <p className="display text-3xl text-[var(--hazard)] text-shadow-ink">{pendentes}</p>
+              <p className="mono text-[0.7rem] tracking-[0.16em] uppercase text-[var(--muted)]">pendentes</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="paper overflow-hidden">
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Carregando...</div>
+          <Loader dark />
         ) : vendas.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">Nenhuma compra encontrada.</div>
+          <div className="empty">
+            <ToyBoxArt className="w-44 mx-auto" />
+            <p className="display">Nenhuma compra ainda</p>
+            <p className="mb-6">Quando você comprar um brinquedo, ele aparece aqui.</p>
+            <Link href="/produtos" className="btn btn-primary">
+              Ver brinquedos
+            </Link>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">ID</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Data</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Total</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Status</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Ações</th>
+                  <th>Pedido</th>
+                  <th>Data</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th className="text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {vendas.map((v) => (
-                  <tr key={v.id_venda} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">{v.id_venda}</td>
-                    <td className="px-4 py-3">{new Date(v.data_venda).toLocaleDateString('pt-BR')}</td>
-                    <td className="px-4 py-3 font-medium">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v.valor_total)}
+                  <tr key={v.id_venda}>
+                    <td className="id">#{v.id_venda}</td>
+                    <td>{formatData(v.data_venda)}</td>
+                    <td className="num font-semibold">{formatBRL(v.valor_total)}</td>
+                    <td>
+                      <span className={`badge ${statusBadge(v.status)}`}>{v.status}</span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`badge ${v.status === 'pago' ? 'badge-success' : v.status === 'pendente' ? 'badge-warning' : 'badge-danger'}`}>
-                        {v.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 flex gap-2">
-                      <button className="btn btn-primary btn-xs" onClick={() => { /* ver detalhes */ }}>
-                        <FaEye />
-                      </button>
-                      {v.status === 'pendente' && (
-                        <button className="btn btn-success btn-xs" onClick={() => finalizar(v.id_venda)}>
-                          Finalizar
+                    <td>
+                      <div className="row-actions justify-end">
+                        <button className="btn btn-outline btn-xs" onClick={() => setDetalhe(v.id_venda)} title="Ver itens" aria-label={`Ver pedido ${v.id_venda}`}>
+                          <FaEye />
                         </button>
-                      )}
+                        {v.status === 'pendente' && (
+                          <button className="btn btn-success btn-xs" onClick={() => finalizar(v.id_venda)}>
+                            <FaCheck /> Finalizar
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -85,6 +118,8 @@ export default function ComprasPage() {
           </div>
         )}
       </div>
+
+      <VendaDetalhe idVenda={detalhe} onClose={fecharDetalhe} />
     </div>
   );
 }

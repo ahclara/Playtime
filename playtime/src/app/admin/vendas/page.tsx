@@ -1,14 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { vendasApi } from '@/services/api';
-import { Venda } from '@/types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FaEye, FaCheck, FaBan } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import { vendasApi } from '@/services/api';
+import { Venda } from '@/types';
+import { formatBRL, formatData, statusBadge } from '@/lib/format';
+import Modal from '@/components/modal';
+import Loader from '@/components/Loader';
+import VendaDetalhe from '@/components/VendaDetalhe';
+
+type Filtro = 'todas' | 'pendente' | 'pago' | 'cancelado';
 
 export default function AdminVendasPage() {
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filtro, setFiltro] = useState<Filtro>('todas');
+  const [detalhe, setDetalhe] = useState<number | null>(null);
+  const [cancelarVenda, setCancelarVenda] = useState<Venda | null>(null);
+  const [motivo, setMotivo] = useState('');
+  const fecharDetalhe = useCallback(() => setDetalhe(null), []);
 
   const load = async () => {
     try {
@@ -25,6 +36,14 @@ export default function AdminVendasPage() {
     load();
   }, []);
 
+  const contagem = useMemo(() => {
+    const c: Record<string, number> = { todas: vendas.length, pendente: 0, pago: 0, cancelado: 0 };
+    vendas.forEach((v) => (c[v.status] = (c[v.status] || 0) + 1));
+    return c;
+  }, [vendas]);
+
+  const visiveis = filtro === 'todas' ? vendas : vendas.filter((v) => v.status === filtro);
+
   const finalizar = async (id: number) => {
     try {
       await vendasApi.finalizar(id);
@@ -35,12 +54,12 @@ export default function AdminVendasPage() {
     }
   };
 
-  const cancelar = async (id: number) => {
-    const motivo = prompt('Motivo do cancelamento:');
-    if (motivo === null) return;
+  const confirmarCancelamento = async () => {
+    if (!cancelarVenda) return;
     try {
-      await vendasApi.cancelar(id, motivo || 'Cancelado pelo gerente');
+      await vendasApi.cancelar(cancelarVenda.id_venda, motivo || 'Cancelado pelo gerente');
       toast.success('Venda cancelada.');
+      setCancelarVenda(null);
       load();
     } catch (err: any) {
       toast.error(err.message);
@@ -49,53 +68,69 @@ export default function AdminVendasPage() {
 
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-4">Vendas</h3>
-      <div className="card overflow-hidden">
+      <div className="flex gap-2 overflow-x-auto scrollbar-none mb-5" role="group" aria-label="Filtrar por status">
+        {(['todas', 'pendente', 'pago', 'cancelado'] as Filtro[]).map((f) => (
+          <button key={f} className="chip" aria-pressed={filtro === f} onClick={() => setFiltro(f)}>
+            {f === 'todas' ? 'Todas' : f} <span className="count">{contagem[f] || 0}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="paper overflow-hidden">
         {loading ? (
-          <div className="text-center py-12">Carregando...</div>
-        ) : vendas.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">Nenhuma venda.</div>
+          <Loader dark />
+        ) : visiveis.length === 0 ? (
+          <div className="empty">
+            <p className="display">Nenhuma venda</p>
+            <p>Não há vendas com esse status.</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left">ID</th>
-                  <th className="px-4 py-3 text-left">Cliente</th>
-                  <th className="px-4 py-3 text-left">Data</th>
-                  <th className="px-4 py-3 text-left">Total</th>
-                  <th className="px-4 py-3 text-left">Status</th>
-                  <th className="px-4 py-3 text-left">Ações</th>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Data</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th className="text-right">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {vendas.map((v) => (
-                  <tr key={v.id_venda} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3">{v.id_venda}</td>
-                    <td className="px-4 py-3">{v.nome_cliente || v.id_cliente}</td>
-                    <td className="px-4 py-3">{new Date(v.data_venda).toLocaleDateString('pt-BR')}</td>
-                    <td className="px-4 py-3 font-medium">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v.valor_total)}
+                {visiveis.map((v) => (
+                  <tr key={v.id_venda}>
+                    <td className="id">#{v.id_venda}</td>
+                    <td className="font-semibold">{v.nome_cliente || `Cliente ${v.id_cliente}`}</td>
+                    <td>{formatData(v.data_venda)}</td>
+                    <td className="num font-semibold">{formatBRL(v.valor_total)}</td>
+                    <td>
+                      <span className={`badge ${statusBadge(v.status)}`}>{v.status}</span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`badge ${v.status === 'pago' ? 'badge-success' : v.status === 'pendente' ? 'badge-warning' : 'badge-danger'}`}>
-                        {v.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 flex gap-2">
-                      <button className="btn btn-primary btn-xs" onClick={() => {/* ver detalhes */}}>
-                        <FaEye />
-                      </button>
-                      {v.status === 'pendente' && (
-                        <>
-                          <button className="btn btn-success btn-xs" onClick={() => finalizar(v.id_venda)}>
-                            <FaCheck />
-                          </button>
-                          <button className="btn btn-danger btn-xs" onClick={() => cancelar(v.id_venda)}>
-                            <FaBan />
-                          </button>
-                        </>
-                      )}
+                    <td>
+                      <div className="row-actions justify-end">
+                        <button className="btn btn-outline btn-xs" onClick={() => setDetalhe(v.id_venda)} title="Ver itens" aria-label={`Ver pedido ${v.id_venda}`}>
+                          <FaEye />
+                        </button>
+                        {v.status === 'pendente' && (
+                          <>
+                            <button className="btn btn-success btn-xs" onClick={() => finalizar(v.id_venda)} title="Finalizar" aria-label={`Finalizar pedido ${v.id_venda}`}>
+                              <FaCheck />
+                            </button>
+                            <button
+                              className="btn btn-danger btn-xs"
+                              onClick={() => {
+                                setCancelarVenda(v);
+                                setMotivo('');
+                              }}
+                              title="Cancelar"
+                              aria-label={`Cancelar pedido ${v.id_venda}`}
+                            >
+                              <FaBan />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -104,6 +139,27 @@ export default function AdminVendasPage() {
           </div>
         )}
       </div>
+
+      <VendaDetalhe idVenda={detalhe} onClose={fecharDetalhe} />
+
+      <Modal
+        isOpen={!!cancelarVenda}
+        onClose={() => setCancelarVenda(null)}
+        title={`Cancelar pedido #${cancelarVenda?.id_venda ?? ''}`}
+        onConfirm={confirmarCancelamento}
+        confirmText="Cancelar venda"
+        cancelText="Voltar"
+        danger
+      >
+        <p className="mb-4">
+          Pedido de <strong>{cancelarVenda?.nome_cliente || `cliente ${cancelarVenda?.id_cliente}`}</strong> no valor de{' '}
+          <strong>{formatBRL(cancelarVenda?.valor_total)}</strong>.
+        </p>
+        <label className="field !mb-0">
+          <span className="field-label">Motivo</span>
+          <textarea className="input" rows={3} value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Cancelado pelo gerente" autoFocus />
+        </label>
+      </Modal>
     </div>
   );
 }

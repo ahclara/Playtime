@@ -1,159 +1,41 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { FaSearch, FaPlus, FaArrowDown } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { produtosApi } from '@/services/api';
 import { Produto } from '@/types';
-import { FaSearch, FaPlus } from 'react-icons/fa';
-import Link from 'next/link';
-import toast from 'react-hot-toast';
+import ProdutoCard from '@/components/ProdutoCard';
+import ToyBoxArt from '@/components/ToyBoxArt';
+import Loader from '@/components/Loader';
+import Modal from '@/components/modal';
 
-const styles = {
-  container: {
-    padding: '2rem 0',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap' as const,
-    gap: '1rem',
-    marginBottom: '2rem',
-  },
-  titulo: {
-    fontSize: '1.8rem',
-    fontWeight: 700,
-    color: '#1a1a2e',
-  },
-  barraBusca: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    backgroundColor: '#fff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '0 1rem',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-  },
-  inputBusca: {
-    border: 'none',
-    background: 'transparent',
-    padding: '0.6rem 0',
-    fontSize: '0.9rem',
-    outline: 'none',
-    width: '200px',
-  },
-  btnNovo: {
-    backgroundColor: '#4f46e5',
-    color: '#fff',
-    border: 'none',
-    padding: '0.6rem 1.2rem',
-    borderRadius: '8px',
-    fontWeight: 500,
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.4rem',
-    transition: 'background-color 0.2s',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-    gap: '1.5rem',
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    padding: '1.2rem',
-    border: '1px solid #e2e8f0',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-    transition: 'box-shadow 0.2s, transform 0.2s',
-    display: 'flex',
-    flexDirection: 'column' as const,
-  },
-  cardHover: {
-    boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-    transform: 'translateY(-2px)',
-  },
-  nomeProduto: {
-    fontSize: '1rem',
-    fontWeight: 600,
-    color: '#1a1a2e',
-  },
-  categoria: {
-    fontSize: '0.8rem',
-    color: '#6b7280',
-  },
-  preco: {
-    fontSize: '1.3rem',
-    fontWeight: 700,
-    color: '#1a1a2e',
-    margin: '0.5rem 0',
-  },
-  estoque: {
-    fontSize: '0.8rem',
-    color: '#6b7280',
-    marginBottom: '0.8rem',
-  },
-  acoes: {
-    display: 'flex',
-    gap: '0.4rem',
-    marginTop: 'auto',
-  },
-  btnComprar: {
-    flex: 1,
-    padding: '0.5rem 0',
-    backgroundColor: '#4f46e5',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '0.85rem',
-    fontWeight: 500,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.3rem',
-    transition: 'background-color 0.2s',
-  },
-  btnEditar: {
-    padding: '0.5rem 0.8rem',
-    backgroundColor: 'transparent',
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    color: '#374151',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-    transition: 'all 0.2s',
-  },
-  btnExcluir: {
-    padding: '0.5rem 0.8rem',
-    backgroundColor: '#ef4444',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-    transition: 'background-color 0.2s',
-  },
-  empty: {
-    textAlign: 'center' as const,
-    color: '#6b7280',
-    padding: '3rem 0',
-    gridColumn: '1 / -1',
-  },
-};
+type Ordem = 'nome' | 'menor' | 'maior';
 
 export default function ProdutosPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [filtro, setFiltro] = useState('');
+  const [busca, setBusca] = useState('');
+  const [categoria, setCategoria] = useState<string | null>(null);
+  const [ordem, setOrdem] = useState<Ordem>('nome');
   const [loading, setLoading] = useState(true);
+  const [excluir, setExcluir] = useState<Produto | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
+
+  // espera o usuário parar de digitar antes de buscar
+  useEffect(() => {
+    const t = setTimeout(() => setBusca(filtro.trim()), 300);
+    return () => clearTimeout(t);
+  }, [filtro]);
 
   const loadProdutos = async () => {
     try {
-      const data = await produtosApi.listar(filtro || undefined);
+      const data = await produtosApi.listar(busca || undefined);
       setProdutos(data);
     } catch (err: any) {
       toast.error(err.message);
@@ -164,102 +46,182 @@ export default function ProdutosPage() {
 
   useEffect(() => {
     loadProdutos();
-  }, [filtro]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busca]);
 
-  const adicionarAoCarrinho = (produto: Produto) => {
-    if (produto.estoque <= 0) {
-      toast.error('Produto sem estoque.');
-      return;
+  const categorias = useMemo(() => {
+    const mapa = new Map<string, number>();
+    produtos.forEach((p) => {
+      const c = p.categoria || 'Sem categoria';
+      mapa.set(c, (mapa.get(c) || 0) + 1);
+    });
+    return Array.from(mapa.entries()).sort((a, b) => b[1] - a[1]);
+  }, [produtos]);
+
+  const visiveis = useMemo(() => {
+    const lista = categoria ? produtos.filter((p) => (p.categoria || 'Sem categoria') === categoria) : [...produtos];
+    if (ordem === 'menor') lista.sort((a, b) => a.preco_unitario - b.preco_unitario);
+    else if (ordem === 'maior') lista.sort((a, b) => b.preco_unitario - a.preco_unitario);
+    else lista.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    return lista;
+  }, [produtos, categoria, ordem]);
+
+  const confirmarExclusao = async () => {
+    if (!excluir) return;
+    setExcluindo(true);
+    try {
+      await produtosApi.deletar(excluir.id_produto);
+      toast.success('Produto excluído.');
+      setExcluir(null);
+      loadProdutos();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setExcluindo(false);
     }
-    const cart = JSON.parse(localStorage.getItem('carrinho') || '[]');
-    const existing = cart.find((item: any) => item.id_produto === produto.id_produto);
-    if (existing) {
-      if (existing.quantidade >= produto.estoque) {
-        toast.error('Quantidade máxima atingida.');
-        return;
-      }
-      existing.quantidade++;
-    } else {
-      cart.push({
-        id_produto: produto.id_produto,
-        nome: produto.nome,
-        preco_unitario: produto.preco_unitario,
-        quantidade: 1,
-        estoque: produto.estoque,
-      });
-    }
-    localStorage.setItem('carrinho', JSON.stringify(cart));
-    window.dispatchEvent(new Event('storage'));
-    toast.success(`${produto.nome} adicionado ao carrinho.`);
   };
 
+  const primeiroNome = user?.nome.split(' ')[0];
+
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.titulo}>Produtos</h2>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <div style={styles.barraBusca}>
-            <FaSearch style={{ color: '#9ca3af' }} />
-            <input
-              type="text"
-              placeholder="Buscar produto..."
-              value={filtro}
-              onChange={(e) => setFiltro(e.target.value)}
-              style={styles.inputBusca}
-            />
+    <>
+      {/* ---------- HERO ---------- */}
+      <section
+        className="relative overflow-hidden"
+        style={{
+          background:
+            'radial-gradient(800px 420px at 20% 80%, rgba(255,51,68,.32), transparent 65%), radial-gradient(700px 500px at 90% 0%, rgba(94,10,16,.95), transparent 70%), linear-gradient(170deg, #2a0407, #0e0a0a 75%)',
+        }}
+      >
+        <div className="max-w-[1240px] mx-auto px-5 pt-12 pb-20 lg:pt-16 lg:pb-24 grid lg:grid-cols-[1.2fr_1fr] gap-8 items-center">
+          <div className="relative z-[1] rise">
+            <p className="eyebrow mb-4">Olá, {primeiroNome} · O turno começou</p>
+            <h1 className="display text-[clamp(2.8rem,7vw,5.6rem)] text-[var(--paper)] text-shadow-ink">
+              A fábrica de <br />
+              brinquedos <span className="flicker">reabriu</span>
+            </h1>
+            <p className="mt-5 text-lg text-cream/85 max-w-md leading-relaxed">
+              Pelúcias, blocos, carrinhos e tudo que saiu da linha de montagem. Escolha o seu antes que as luzes apaguem.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a href="#catalogo" className="btn btn-primary text-lg">
+                Ver brinquedos <FaArrowDown />
+              </a>
+              {user?.perfil === 'gerente' ? (
+                <Link href="/admin/produtos" className="btn btn-ghost text-lg">
+                  <FaPlus /> Novo produto
+                </Link>
+              ) : (
+                <Link href="/compras" className="btn btn-ghost text-lg">
+                  Minhas compras
+                </Link>
+              )}
+            </div>
+
+            <dl className="mt-10 flex gap-8">
+              {[
+                { n: produtos.length, l: 'brinquedos' },
+                { n: categorias.length, l: 'categorias' },
+                { n: produtos.filter((p) => p.estoque > 0).length, l: 'à pronta entrega' },
+              ].map((s) => (
+                <div key={s.l}>
+                  <dt className="sr-only">{s.l}</dt>
+                  <dd className="display text-4xl text-[var(--hazard)] text-shadow-ink">{loading ? '–' : s.n}</dd>
+                  <dd className="mono text-[0.7rem] tracking-[0.16em] uppercase text-[var(--muted)]">{s.l}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          {user?.perfil === 'gerente' && (
-            <Link href="/admin/produtos" style={styles.btnNovo}>
-              <FaPlus /> Novo Produto
-            </Link>
+
+          <ToyBoxArt className="w-full max-w-[460px] mx-auto lg:ml-auto" />
+        </div>
+        <div className="tear absolute bottom-0 left-0" />
+      </section>
+
+      {/* ---------- CATÁLOGO ---------- */}
+      <section id="catalogo" className="bg-[var(--paper)] text-[var(--ink)] scroll-mt-28" style={{ backgroundImage: 'var(--grain)' }}>
+        <div className="max-w-[1240px] mx-auto px-5 pt-8 pb-16">
+          <div className="flex flex-wrap items-end justify-between gap-5 mb-6">
+            <div>
+              <p className="mono text-xs tracking-[0.2em] uppercase text-[var(--red)]">Linha de montagem</p>
+              <h2 className="display text-[clamp(2rem,4vw,3rem)]">Todos os brinquedos</h2>
+            </div>
+            <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+              <label className="input-icon block flex-1 sm:w-72">
+                <FaSearch />
+                <input
+                  type="search"
+                  className="input"
+                  placeholder="Procurar brinquedo..."
+                  value={filtro}
+                  onChange={(e) => setFiltro(e.target.value)}
+                  aria-label="Buscar produto"
+                />
+              </label>
+              <select className="input !w-auto" value={ordem} onChange={(e) => setOrdem(e.target.value as Ordem)} aria-label="Ordenar">
+                <option value="nome">A–Z</option>
+                <option value="menor">Menor preço</option>
+                <option value="maior">Maior preço</option>
+              </select>
+            </div>
+          </div>
+
+          {categorias.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto scrollbar-none pb-2 mb-6 -mx-1 px-1" role="group" aria-label="Filtrar por categoria">
+              {[['Todos', produtos.length] as [string, number], ...categorias].map(([c, n]) => {
+                const ativo = c === 'Todos' ? categoria === null : categoria === c;
+                return (
+                  <button
+                    key={c}
+                    className="chip !border-[var(--ink)] !text-[var(--ink)] aria-pressed:!bg-[var(--ink)] aria-pressed:!text-[var(--hazard)]"
+                    aria-pressed={ativo}
+                    onClick={() => setCategoria(c === 'Todos' ? null : c)}
+                  >
+                    {c} <span className="count">{n}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {loading ? (
+            <Loader label="Buscando nas prateleiras..." dark />
+          ) : visiveis.length === 0 ? (
+            <div className="empty">
+              <ToyBoxArt className="w-40 mx-auto" />
+              <p className="display">Nada por aqui...</p>
+              <p>{busca ? `Nenhum brinquedo encontrado para "${busca}".` : 'Nenhum produto cadastrado ainda.'}</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {visiveis.map((produto, i) => (
+                <ProdutoCard
+                  key={produto.id_produto}
+                  produto={produto}
+                  style={{ animationDelay: `${Math.min(i, 12) * 40}ms` }}
+                  onEdit={(id) => router.push(`/admin/produtos?editar=${id}`)}
+                  onDelete={() => setExcluir(produto)}
+                />
+              ))}
+            </div>
           )}
         </div>
-      </div>
+      </section>
+      <div className="tear tear-flip" />
 
-      {loading ? (
-        <div style={styles.empty}>Carregando produtos...</div>
-      ) : produtos.length === 0 ? (
-        <div style={styles.empty}>Nenhum produto encontrado.</div>
-      ) : (
-        <div style={styles.grid}>
-          {produtos.map((produto) => (
-            <div
-              key={produto.id_produto}
-              style={styles.card}
-              onMouseEnter={(e) => {
-                Object.assign(e.currentTarget.style, styles.cardHover);
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <div style={styles.nomeProduto}>{produto.nome}</div>
-              <div style={styles.categoria}>{produto.categoria || 'Sem categoria'}</div>
-              <div style={styles.preco}>
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(produto.preco_unitario)}
-              </div>
-              <div style={styles.estoque}>Estoque: {produto.estoque}</div>
-              <div style={styles.acoes}>
-                <button
-                  onClick={() => adicionarAoCarrinho(produto)}
-                  style={styles.btnComprar}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#4338ca')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#4f46e5')}
-                >
-                  <FaPlus /> Comprar
-                </button>
-                {user?.perfil === 'gerente' && (
-                  <>
-                    <button style={styles.btnEditar}>Editar</button>
-                    <button style={styles.btnExcluir}>X</button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+      <Modal
+        isOpen={!!excluir}
+        onClose={() => setExcluir(null)}
+        title="Excluir produto"
+        onConfirm={confirmarExclusao}
+        confirmText="Excluir"
+        danger
+        loading={excluindo}
+      >
+        <p>
+          Tem certeza que deseja excluir <strong>{excluir?.nome}</strong>? Essa ação não pode ser desfeita.
+        </p>
+      </Modal>
+    </>
   );
 }
