@@ -45,7 +45,8 @@ class AutenticarUsuarioUseCase:
             usuario['id_usuario'],
             usuario['id_cliente'],
             usuario['email'],
-            usuario['perfil']
+            usuario['perfil'],
+            nome_usuario
         )
         
         return {

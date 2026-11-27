@@ -45,6 +45,12 @@ export const api = {
     const json = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      // Token vencido/inválido numa sessão aberta: volta para o login.
+      // (No próprio login não há token, então o erro 401 segue normal.)
+      if (res.status === 401 && this.getToken() && typeof window !== 'undefined') {
+        this.clearToken();
+        window.location.href = '/';
+      }
       const error = new Error(json.erro || json.mensagem || `Erro ${res.status}`);
       (error as any).status = res.status;
       throw error;

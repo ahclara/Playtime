@@ -11,16 +11,30 @@ if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY não configurada. Defina uma chave JWT no ambiente ou em back-end/.env.")
 ALGORITHM = "HS256"
 
-def gerar_token(id_usuario, id_cliente, email, perfil):
+def gerar_token(id_usuario, id_cliente, email, perfil, nome=None):
     """Gera um token JWT para o usuário"""
     payload = {
         'id_usuario': id_usuario,
         'id_cliente': id_cliente,
         'email': email,
         'perfil': perfil,
+        'nome': nome,
         'exp': datetime.utcnow() + timedelta(hours=1)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def usuario_opcional():
+    """Retorna os dados do token enviado (se houver e for válido), senão None.
+    Usado em rotas públicas que se comportam diferente para usuários logados."""
+    token = request.headers.get('Authorization')
+    if not token:
+        return None
+    if token.startswith('Bearer '):
+        token = token[7:]
+    try:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except jwt.InvalidTokenError:
+        return None
 
 def token_required(f):
     """Decorator para verificar token JWT"""

@@ -224,7 +224,7 @@ def atualizar_cliente(current_user, id_cliente):
 
 @cliente_bp.route('/clientes/<int:id_cliente>', methods=['DELETE'])
 @token_required
-@role_required(['gerenciar_clientes'])
+@role_required(['gerente'])
 def deletar_cliente(current_user, id_cliente):
     """Deletar um cliente"""
     try:

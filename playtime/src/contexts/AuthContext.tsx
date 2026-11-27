@@ -16,6 +16,25 @@ interface AuthContextData {
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
+/** Decodifica o payload do JWT (base64url + UTF-8, para nomes com acento). */
+function lerToken(token: string): Usuario | null {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const payload = JSON.parse(new TextDecoder().decode(bytes));
+    if (payload.exp && payload.exp * 1000 < Date.now()) return null; // expirado
+    return {
+      id_usuario: payload.id_usuario,
+      id_cliente: payload.id_cliente,
+      email: payload.email,
+      perfil: payload.perfil,
+      nome: payload.nome || 'Usuário',
+    };
+  } catch {
+    return null;
+  }
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,19 +43,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const token = api.getToken();
     if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const usuario: Usuario = {
-          id_usuario: payload.id_usuario,
-          id_cliente: payload.id_cliente,
-          email: payload.email,
-          perfil: payload.perfil,
-          nome: payload.nome || 'Usuário',
-        };
-        setUser(usuario);
-      } catch {
-        api.clearToken();
-      }
+      const usuario = lerToken(token);
+      if (usuario) setUser(usuario);
+      else api.clearToken();
     }
     setLoading(false);
   }, []);

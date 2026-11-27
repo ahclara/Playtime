@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FaShoppingCart, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCart } from '@/lib/cart';
+import { PERFIL_LABEL } from '@/lib/perfil';
 import Logo from './Logo';
 
 const AVISOS = [
@@ -61,8 +62,9 @@ export default function Header() {
     { href: '/produtos', label: 'Brinquedos' },
     { href: '/compras', label: 'Minhas compras' },
     ...(user.perfil === 'gerente' ? [{ href: '/admin', label: 'Gerência' }] : []),
+    ...(user.perfil === 'vendedor' ? [{ href: '/admin/vendas', label: 'Balcão' }] : []),
   ];
-  const ativo = (href: string) => (href === '/admin' ? pathname.startsWith('/admin') : pathname === href);
+  const ativo = (href: string) => (href.startsWith('/admin') ? pathname.startsWith('/admin') : pathname === href);
 
   return (
     <header className="sticky top-0 z-50">
@@ -103,7 +105,7 @@ export default function Header() {
               </span>
               <span className="leading-tight">
                 <span className="block text-sm font-semibold max-w-[140px] truncate">{user.nome}</span>
-                <span className="block mono text-[0.68rem] tracking-[0.15em] uppercase text-[var(--muted)]">{user.perfil}</span>
+                <span className="block mono text-[0.68rem] tracking-[0.15em] uppercase text-[var(--muted)]">{PERFIL_LABEL[user.perfil]}</span>
               </span>
             </div>
 
@@ -127,7 +129,7 @@ export default function Header() {
       {menuAberto && (
         <div className="md:hidden bg-[var(--ink-2)] border-b-[3px] border-[var(--red)] px-5 py-4 rise">
           <p className="mono text-xs tracking-[0.15em] uppercase text-[var(--muted)] mb-3">
-            {user.nome} · {user.perfil}
+            {user.nome} · {PERFIL_LABEL[user.perfil]}
           </p>
           <nav className="flex flex-col gap-3" aria-label="Menu">
             {links.map((l) => (
