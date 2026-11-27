@@ -300,6 +300,23 @@ def finalizar_venda(current_user, id_venda):
         # Atualiza status no banco
         conn = get_connection()
         cur = conn.cursor()
+
+        # Confere se todos os produtos ainda têm estoque suficiente
+        cur.execute("""
+            SELECT p.nome, p.estoque, SUM(iv.quantidade)
+            FROM itens_venda iv
+            JOIN produtos p ON p.id_produto = iv.id_produto
+            WHERE iv.id_venda = %s
+            GROUP BY p.id_produto, p.nome, p.estoque
+        """, (id_venda,))
+        sem_estoque = [nome for (nome, estoque, qtd) in cur.fetchall() if estoque < qtd]
+        if sem_estoque:
+            cur.close()
+            conn.close()
+            return jsonify({
+                'erro': f"Estoque insuficiente para {', '.join(sem_estoque)}",
+                'produtos_indisponiveis': sem_estoque
+            }), 400
         
         import uuid
         id_transacao = f"TXN_{uuid.uuid4().hex[:8].upper()}"

@@ -1,0 +1,6 @@
+[
+  { "id_venda": 37, "id_cliente": 3, "nome_cliente": "Ana Clara", "data_venda": "2026-11-20T15:00:00", "valor_total": 72.0, "status": "pendente", "metodo_pagamento": "pix" },
+  { "id_venda": 8, "id_cliente": 6, "nome_cliente": "José Bezerra", "data_venda": "2026-06-29T15:55:53", "valor_total": 105.0, "status": "pago", "metodo_pagamento": "dinheiro" },
+  { "id_venda": 6, "id_cliente": 4, "nome_cliente": "Eduarda Cecília da Silva", "data_venda": "2026-06-29T03:04:43", "valor_total": 175.0, "status": "cancelado", "metodo_pagamento": "cartao_credito" },
+  { "id_venda": 1, "id_cliente": 4, "nome_cliente": "Eduarda Cecília da Silva", "data_venda": "2026-06-28T23:33:03", "valor_total": 108.0, "status": "pago", "metodo_pagamento": "pix" }
+]

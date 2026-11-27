@@ -103,8 +103,8 @@ export default function AdminProdutosPage() {
   const salvarEstoque = async () => {
     if (!estoqueDe) return;
     const num = parseInt(qtdEstoque);
-    if (isNaN(num) || num === 0) {
-      toast.error('Digite um número válido.');
+    if (estoqueDe.estoque + num < 0) {
+      toast.error(`Estoque não pode ficar negativo (estoque atual: ${estoqueDe.estoque}).`);
       return;
     }
     try {

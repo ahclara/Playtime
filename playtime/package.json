@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:front": "cypress run --spec \"cypress/e2e/frontend/**/*.cy.ts\"",
+    "cy:api": "cypress run --spec \"cypress/e2e/api/**/*.cy.ts\""
   },
   "dependencies": {
     "@fontsource/luckiest-guy": "^5.3.0",

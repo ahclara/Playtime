@@ -1,0 +1,15 @@
+{
+  "total_clientes": 16,
+  "total_produtos": 7,
+  "total_vendas_concluidas": 26,
+  "total_arrecadado": 2450.75,
+  "produtos_mais_vendidos": [
+    { "nome": "CatNap", "total_vendido": 42 },
+    { "nome": "Pianosaurus", "total_vendido": 25 },
+    { "nome": "Kissy Missy", "total_vendido": 9 }
+  ],
+  "clientes_top": [
+    { "nome": "José Bezerra", "compras": 8, "total_gasto": 900 },
+    { "nome": "Eduarda Cecília da Silva", "compras": 5, "total_gasto": 870.78 }
+  ]
+}

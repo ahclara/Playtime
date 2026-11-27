@@ -20,7 +20,8 @@ class GerarRelatorioProdutosMaisVendidosUseCase:
             FROM itens_venda iv
             JOIN produtos p ON iv.id_produto = p.id_produto
             JOIN vendas v ON iv.id_venda = v.id_venda
-            WHERE v.data_venda BETWEEN %s AND %s
+            WHERE v.data_venda >= %s::date
+                AND v.data_venda < (%s::date + 1)
                 AND v.status = 'pago' 
             GROUP BY p.id_produto, p.nome, p.categoria
             ORDER BY total_vendido DESC

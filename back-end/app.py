@@ -14,6 +14,7 @@ from routes.Produto_routes import produto_bp
 from routes.Venda_routes import venda_bp
 from routes.Relatorio_routes import relatorio_bp
 from routes.Auth_routes import auth_bp
+from routes.ItemVenda_routes import item_venda_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -22,10 +23,10 @@ CORS(app)
 init_db()
 
 # Registra Blueprints
-# Registra Blueprints
 app.register_blueprint(cliente_bp, url_prefix='/api')
 app.register_blueprint(produto_bp, url_prefix='/api')
 app.register_blueprint(venda_bp, url_prefix='/api')
+app.register_blueprint(item_venda_bp, url_prefix='/api')
 app.register_blueprint(auth_bp)
 app.register_blueprint(relatorio_bp)
 

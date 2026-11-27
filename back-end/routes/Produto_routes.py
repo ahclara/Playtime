@@ -7,6 +7,29 @@ from instances import sistema
 
 produto_bp = Blueprint('produtos', __name__)
 
+
+def produto_da_linha(row):
+    """Monta o Produto a partir de uma linha do banco (com descrição e categoria)."""
+    return Produto(
+        id_produto=row['id_produto'],
+        nome=row['nome'],
+        descricao=row.get('descricao'),
+        preco_unitario=row['preco_unitario'],
+        estoque=row['estoque'],
+        categoria=row.get('categoria'),
+        data_cadastro=row.get('data_cadastro'),
+    )
+
+
+def validar_preco(valor):
+    """Retorna uma mensagem de erro se o preço for inválido, senão None."""
+    try:
+        if float(valor) <= 0:
+            return 'Preço unitário deve ser maior que zero'
+    except (TypeError, ValueError):
+        return 'Preço unitário inválido'
+    return None
+
 # --------- CONSULTAR PRODUTOS ---------
 
 @produto_bp.route('/produtos', methods=['GET'])
@@ -26,12 +49,7 @@ def listar_produtos(current_user):
         # Converter para o formato esperado
         produtos = []
         for row in produtos_data:
-            produto = Produto(
-                id_produto=row['id_produto'],
-                nome=row['nome'],
-                preco_unitario=row['preco_unitario'],
-                estoque=row['estoque']
-            )
+            produto = produto_da_linha(row)
             produtos.append(produto.to_dict())
         
         return jsonify(produtos), 200
@@ -58,12 +76,7 @@ def buscar_produto(current_user, id_produto):
         if not row:
             return jsonify({'erro': 'Produto não encontrado'}), 404
         
-        produto = Produto(
-            id_produto=row['id_produto'],
-            nome=row['nome'],
-            preco_unitario=row['preco_unitario'],
-            estoque=row['estoque']
-        )
+        produto = produto_da_linha(row)
         return jsonify(produto.to_dict()), 200
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
@@ -77,15 +90,22 @@ def criar_produto(current_user):
     """Criar produto"""
     try:
         dados = request.get_json()
+
+        erro_preco = validar_preco(dados['preco_unitario'])
+        if erro_preco:
+            return jsonify({'erro': erro_preco}), 400
+        if int(dados.get('estoque', 0) or 0) < 0:
+            return jsonify({'erro': 'Estoque não pode ser negativo'}), 400
         
         conn = get_connection()
         cur = conn.cursor()
         
         cur.execute("""
-            INSERT INTO produtos (nome, preco_unitario, estoque)
-            VALUES (%s, %s, %s)
+            INSERT INTO produtos (nome, descricao, preco_unitario, estoque, categoria)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING id_produto
-        """, (dados['nome'], dados['preco_unitario'], dados.get('estoque', 0)))
+        """, (dados['nome'], dados.get('descricao') or None, dados['preco_unitario'],
+              dados.get('estoque', 0), dados.get('categoria') or None))
         
         id_produto = cur.fetchone()[0]
         conn.commit()
@@ -100,12 +120,7 @@ def criar_produto(current_user):
         cur2.close()
         conn2.close()
         
-        produto = Produto(
-            id_produto=row['id_produto'],
-            nome=row['nome'],
-            preco_unitario=row['preco_unitario'],
-            estoque=row['estoque']
-        )
+        produto = produto_da_linha(row)
         
         # Atualiza a memória também
         sistema.produtos[id_produto] = produto
@@ -135,9 +150,20 @@ def atualizar_produto(current_user, id_produto):
         if 'nome' in dados and dados['nome']:
             updates.append("nome = %s")
             params.append(dados['nome'])
-        if 'preco_unitario' in dados and dados['preco_unitario']:
+        if 'preco_unitario' in dados and dados['preco_unitario'] is not None:
+            erro_preco = validar_preco(dados['preco_unitario'])
+            if erro_preco:
+                cur.close()
+                conn.close()
+                return jsonify({'erro': erro_preco}), 400
             updates.append("preco_unitario = %s")
             params.append(dados['preco_unitario'])
+        if 'descricao' in dados:
+            updates.append("descricao = %s")
+            params.append(dados['descricao'] or None)
+        if 'categoria' in dados:
+            updates.append("categoria = %s")
+            params.append(dados['categoria'] or None)
         if 'estoque' in dados and dados['estoque'] is not None:
             updates.append("estoque = %s")
             params.append(dados['estoque'])
@@ -176,11 +202,28 @@ def atualizar_produto(current_user, id_produto):
 def atualizar_estoque(current_user, id_produto):
     """Atualizar estoque"""
     try:
-        dados = request.get_json()
-        quantidade = dados.get('quantidade', 0)
+        dados = request.get_json() or {}
+        try:
+            quantidade = int(dados.get('quantidade', 0))
+        except (TypeError, ValueError):
+            return jsonify({'erro': 'Quantidade inválida'}), 400
         
         conn = get_connection()
         cur = conn.cursor()
+
+        cur.execute("SELECT estoque FROM produtos WHERE id_produto = %s", (id_produto,))
+        row = cur.fetchone()
+        if not row:
+            cur.close()
+            conn.close()
+            return jsonify({'erro': 'Produto não encontrado'}), 404
+
+        if row[0] + quantidade < 0:
+            cur.close()
+            conn.close()
+            return jsonify({
+                'erro': f'Estoque não pode ficar negativo (estoque atual: {row[0]})'
+            }), 400
         
         cur.execute("UPDATE produtos SET estoque = estoque + %s WHERE id_produto = %s RETURNING estoque", 
                    (quantidade, id_produto))
@@ -212,6 +255,22 @@ def deletar_produto(current_user, id_produto):
     try:
         conn = get_connection()
         cur = conn.cursor()
+
+        cur.execute("SELECT id_produto FROM produtos WHERE id_produto = %s", (id_produto,))
+        if not cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'erro': 'Produto não encontrado'}), 404
+
+        # Não deixa excluir produto que já aparece em alguma venda
+        cur.execute("SELECT COUNT(DISTINCT id_venda) FROM itens_venda WHERE id_produto = %s", (id_produto,))
+        total_vendas = cur.fetchone()[0]
+        if total_vendas > 0:
+            cur.close()
+            conn.close()
+            return jsonify({
+                'erro': f'Produto possui vendas vinculadas ({total_vendas} venda(s)) e não pode ser excluído'
+            }), 400
         
         cur.execute("DELETE FROM produtos WHERE id_produto = %s", (id_produto,))
         conn.commit()

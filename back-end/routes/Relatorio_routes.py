@@ -98,3 +98,72 @@ def relatorio_geral(current_user):
         import traceback
         traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
+
+# --------- VALIDAÇÃO DO PERÍODO ---------
+
+def _periodo_valido(current_user):
+    """Confere perfil e datas. Retorna (data_inicio, data_fim, None) ou (None, None, resposta_de_erro)."""
+    from datetime import date
+
+    if current_user.get('perfil') != 'gerente':
+        return None, None, (jsonify({'erro': 'Acesso negado. Apenas gerentes podem acessar relatórios.'}), 403)
+
+    data_inicio = request.args.get('data_inicio')
+    data_fim = request.args.get('data_fim')
+    if not data_inicio or not data_fim:
+        return None, None, (jsonify({'erro': 'Parâmetros data_inicio e data_fim são obrigatórios'}), 400)
+
+    try:
+        inicio = date.fromisoformat(data_inicio)
+        fim = date.fromisoformat(data_fim)
+    except ValueError:
+        return None, None, (jsonify({'erro': 'Data inválida. Use o formato AAAA-MM-DD'}), 400)
+
+    if fim < inicio:
+        return None, None, (jsonify({'erro': 'Intervalo de datas inválido: a data final é anterior à data inicial'}), 400)
+
+    return inicio.isoformat(), fim.isoformat(), None
+
+
+# --------- VENDAS POR PERÍODO ---------
+
+@relatorio_bp.route('/relatorios/vendas-periodo', methods=['GET'])
+@token_required
+def relatorio_vendas_periodo(current_user):
+    """Vendas pagas dentro do período (data_inicio e data_fim inclusive)"""
+    try:
+        from use_cases.ListarVendasPorPeriodoUseCase import ListarVendasPorPeriodoUseCase
+
+        data_inicio, data_fim, erro = _periodo_valido(current_user)
+        if erro:
+            return erro
+
+        vendas = ListarVendasPorPeriodoUseCase().executar(data_inicio, data_fim)
+        return jsonify({
+            'periodo': {'data_inicio': data_inicio, 'data_fim': data_fim},
+            'total_vendas': len(vendas),
+            'vendas': vendas,
+        }), 200
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+
+
+# --------- PRODUTOS MAIS VENDIDOS ---------
+
+@relatorio_bp.route('/relatorios/produtos-mais-vendidos', methods=['GET'])
+@token_required
+def relatorio_produtos_mais_vendidos(current_user):
+    """Produtos ordenados pela quantidade vendida no período (lista vazia se não houver vendas)"""
+    try:
+        from use_cases.GerarRelatorioProdutosMaisVendidosUseCase import GerarRelatorioProdutosMaisVendidosUseCase
+
+        data_inicio, data_fim, erro = _periodo_valido(current_user)
+        if erro:
+            return erro
+
+        resultado = GerarRelatorioProdutosMaisVendidosUseCase().executar(data_inicio, data_fim)
+        if not resultado['produtos_mais_vendidos']:
+            resultado['mensagem'] = 'Nenhuma venda registrada no período'
+        return jsonify(resultado), 200
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500

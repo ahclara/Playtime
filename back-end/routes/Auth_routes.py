@@ -153,7 +153,7 @@ def meu_perfil(current_user):
         cliente = sistema.buscar_cliente(current_user['id_cliente'])
         if not cliente:
             return jsonify({'erro': 'Cliente não encontrado'}), 404
-        return jsonify(cliente.to_dict()), 200
+        return jsonify({**cliente.to_dict(), 'perfil': current_user.get('perfil')}), 200
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
 

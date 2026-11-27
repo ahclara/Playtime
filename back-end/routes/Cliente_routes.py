@@ -48,7 +48,9 @@ def buscar_cliente(current_user, id_cliente):
 # --------- CRIAR CLIENTE ---------
 
 @cliente_bp.route('/clientes', methods=['POST'])
-def criar_cliente():
+@token_required
+@role_required(['gerenciar_clientes'])
+def criar_cliente(current_user):
     """Criar um novo cliente"""
     try:
         dados = request.get_json()

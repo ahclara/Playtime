@@ -1,0 +1,7 @@
+[
+  { "id_cliente": 3, "nome": "Ana Clara", "cpf": "11111111103", "email": "Ana@gmail.com", "ativo": true },
+  { "id_cliente": 4, "nome": "Eduarda Cecília da Silva", "cpf": "11111111104", "email": "Duda@gmail.com", "ativo": true },
+  { "id_cliente": 6, "nome": "José Bezerra", "cpf": "11111111106", "email": "Bezerra@gmail.com", "ativo": true },
+  { "id_cliente": 9, "nome": "João Batista", "cpf": "11111111109", "email": "Jao@gmail.com", "ativo": true },
+  { "id_cliente": 12, "nome": "Cintia", "cpf": "11111111112", "email": "Cin@gmail.com", "ativo": true }
+]

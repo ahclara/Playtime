@@ -12,7 +12,8 @@ class ListarVendasPorPeriodoUseCase:
             SELECT v.*, c.nome as nome_cliente
             FROM vendas v
             JOIN clientes c ON v.id_cliente = c.id_cliente
-            WHERE v.data_venda BETWEEN %s AND %s
+            WHERE v.data_venda >= %s::date
+                AND v.data_venda < (%s::date + 1)
                 AND v.status = 'pago' 
             ORDER BY v.data_venda DESC
         """, (data_inicio, data_fim))

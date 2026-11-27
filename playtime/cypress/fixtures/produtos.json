@@ -1,0 +1,9 @@
+[
+  { "id_produto": 1, "nome": "Kissy Missy", "preco_unitario": 36.0, "estoque": 47, "data_cadastro": "2026-06-28T22:37:48" },
+  { "id_produto": 2, "nome": "Huggy Wuggy", "preco_unitario": 35.99, "estoque": 40, "data_cadastro": "2026-06-28T22:38:15" },
+  { "id_produto": 3, "nome": "Mommy Long Legs", "preco_unitario": 32.6, "estoque": 35, "data_cadastro": "2026-06-28T22:47:34" },
+  { "id_produto": 6, "nome": "CatNap", "preco_unitario": 25.0, "estoque": 26, "data_cadastro": "2026-06-29T01:01:19" },
+  { "id_produto": 7, "nome": "Pianosaurus", "preco_unitario": 15.0, "estoque": 48, "data_cadastro": "2026-06-29T03:25:26" },
+  { "id_produto": 9, "nome": "DogDay", "preco_unitario": 18.0, "estoque": 38, "data_cadastro": "2026-06-29T16:30:35" },
+  { "id_produto": 15, "nome": "catnap2.0", "preco_unitario": 15.5, "estoque": 0, "data_cadastro": "2026-11-26T15:50:52" }
+]

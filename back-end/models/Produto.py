@@ -3,17 +3,22 @@ from datetime import datetime
 class Produto:
     """Entidade Produto"""
     
-    def __init__(self, nome, preco_unitario, estoque=0, id_produto=None):
+    def __init__(self, nome, preco_unitario, estoque=0, id_produto=None,
+                 descricao=None, categoria=None, data_cadastro=None):
         self.id_produto = id_produto
         self.nome = nome
+        self.descricao = descricao
         self.preco_unitario = preco_unitario
         self.estoque = estoque
-        self.data_cadastro = datetime.now()
+        self.categoria = categoria
+        self.data_cadastro = data_cadastro or datetime.now()
     
     def to_dict(self):
         return {
             'id_produto': self.id_produto,
             'nome': self.nome,
+            'descricao': self.descricao,
+            'categoria': self.categoria,
             'preco_unitario': float(self.preco_unitario),
             'estoque': self.estoque,
             'data_cadastro': self.data_cadastro.isoformat() if self.data_cadastro else None

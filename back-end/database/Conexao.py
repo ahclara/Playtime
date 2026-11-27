@@ -94,6 +94,9 @@ def init_db():
     # Mantém compatibilidade com bancos criados por versões anteriores.
     cur.execute("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true")
     cur.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true")
+    cur.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nome VARCHAR(100)")
+    cur.execute("ALTER TABLE produtos ADD COLUMN IF NOT EXISTS descricao TEXT")
+    cur.execute("ALTER TABLE produtos ADD COLUMN IF NOT EXISTS categoria VARCHAR(50)")
     
     # 7. Tabela: permissoes (RBAC)
     cur.execute("""
