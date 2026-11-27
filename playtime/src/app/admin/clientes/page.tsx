@@ -8,7 +8,7 @@ import { Cliente } from '@/types';
 import Modal from '@/components/modal';
 import Loader from '@/components/Loader';
 
-const FORM_VAZIO = { nome: '', cpf: '', email: '', senha: '', perfil: 'cliente' };
+const FORM_VAZIO = { nome: '', cpf: '', email: '', senha: '' };
 const CORES = ['var(--red)', 'var(--teal)', 'var(--hazard)', '#8b5cf6', '#ff7a1a', '#3fbf5f'];
 
 export default function AdminClientesPage() {
@@ -45,7 +45,7 @@ export default function AdminClientesPage() {
   const abrirModal = (cliente?: Cliente) => {
     if (cliente) {
       setEditando(cliente);
-      setForm({ nome: cliente.nome, cpf: cliente.cpf, email: cliente.email, senha: '', perfil: 'cliente' });
+      setForm({ nome: cliente.nome, cpf: cliente.cpf, email: cliente.email, senha: '' });
     } else {
       setEditando(null);
       setForm(FORM_VAZIO);
@@ -73,7 +73,6 @@ export default function AdminClientesPage() {
           cpf: form.cpf,
           email: form.email,
           senha: form.senha,
-          perfil: form.perfil,
         });
         toast.success('Cliente registrado.');
       }
@@ -183,16 +182,6 @@ export default function AdminClientesPage() {
             <span className="field-label">CPF</span>
             <input className="input" value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} disabled={!!editando} />
           </label>
-          {!editando && (
-            <label className="field">
-              <span className="field-label">Perfil</span>
-              <select className="input" value={form.perfil} onChange={(e) => setForm({ ...form, perfil: e.target.value })}>
-                <option value="cliente">Cliente</option>
-                <option value="vendedor">Vendedor</option>
-                <option value="gerente">Gerente</option>
-              </select>
-            </label>
-          )}
         </div>
         <label className="field">
           <span className="field-label">E-mail</span>

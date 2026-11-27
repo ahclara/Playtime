@@ -84,7 +84,8 @@ def registrar():
         nome_cliente = cliente_data[1]
         
         # 6. Inserir usuário 
-        perfil = dados.get('perfil', 'cliente')
+        # Cadastro público não pode escolher perfis administrativos.
+        perfil = 'cliente'
         cur.execute("""
             INSERT INTO usuarios (id_cliente, email, senha_hash, perfil, ativo, nome)
             VALUES (%s, %s, %s, %s, true, %s)

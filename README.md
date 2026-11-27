@@ -220,14 +220,20 @@ cd Playtime/back-end
 # 2. Instale as dependências
 pip install -r requirements.txt
 
-# 3. Execute o servidor
+# 3. Configure o banco e a chave JWT
+cp .env.example .env
+# Edite .env e informe DATABASE_URL e uma SECRET_KEY aleatÃ³ria
+
+# 4. Execute o servidor
 python app.py
 ```
 
 ### Front-end
 
 ```bash
-
+cd ../playtime
+npm install
+npm run dev
 ```
 
 ---

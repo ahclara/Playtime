@@ -1,12 +1,7 @@
 import bcrypt
-import jwt
-import os
-from datetime import datetime, timedelta
 from database.Conexao import get_connection
 from psycopg2.extras import RealDictCursor
 from middleware.auth import gerar_token
-
-SECRET_KEY = os.getenv("SECRET_KEY", "playtime_super_secret_key_2026")
 
 class AutenticarUsuarioUseCase:
     """Caso de Uso: Autenticar Usuário (JWT)"""
