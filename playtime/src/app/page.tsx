@@ -8,7 +8,7 @@ import AuthShell from '@/components/AuthShell';
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const [email, setEmail] = useState('xxxx@xxxx.xx');
+  const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -66,7 +66,7 @@ export default function LoginPage() {
               className="input"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              placeholder="••••••••"
+              placeholder="seuemail@exemplo.com"
               autoComplete="current-password"
               required
             />

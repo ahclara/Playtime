@@ -22,6 +22,7 @@ def init_db():
             nome VARCHAR(100) NOT NULL,
             cpf VARCHAR(14) UNIQUE NOT NULL,
             email VARCHAR(100) NOT NULL,
+            ativo BOOLEAN DEFAULT TRUE,
             data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -83,9 +84,16 @@ def init_db():
             email VARCHAR(100) UNIQUE NOT NULL,
             senha_hash VARCHAR(255) NOT NULL,
             perfil VARCHAR(20) DEFAULT 'cliente',
+            ativo BOOLEAN DEFAULT TRUE,
+            nome VARCHAR(100),
             data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    # Bancos criados antes dessas colunas existirem (o código usa 'ativo' e 'nome')
+    cur.execute("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS ativo BOOLEAN DEFAULT TRUE")
+    cur.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ativo BOOLEAN DEFAULT TRUE")
+    cur.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nome VARCHAR(100)")
     
     # 7. Tabela: permissoes (RBAC)
     cur.execute("""

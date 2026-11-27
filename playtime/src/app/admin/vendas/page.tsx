@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FaEye, FaCheck, FaBan } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { vendasApi } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { Venda } from '@/types';
 import { formatBRL, formatData, statusBadge } from '@/lib/format';
 import Modal from '@/components/modal';
@@ -13,6 +14,8 @@ import VendaDetalhe from '@/components/VendaDetalhe';
 type Filtro = 'todas' | 'pendente' | 'pago' | 'cancelado';
 
 export default function AdminVendasPage() {
+  const { user } = useAuth();
+  const gerente = user?.perfil === 'gerente'; // só o gerente cancela vendas
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<Filtro>('todas');
@@ -117,17 +120,19 @@ export default function AdminVendasPage() {
                             <button className="btn btn-success btn-xs" onClick={() => finalizar(v.id_venda)} title="Finalizar" aria-label={`Finalizar pedido ${v.id_venda}`}>
                               <FaCheck />
                             </button>
-                            <button
-                              className="btn btn-danger btn-xs"
-                              onClick={() => {
-                                setCancelarVenda(v);
-                                setMotivo('');
-                              }}
-                              title="Cancelar"
-                              aria-label={`Cancelar pedido ${v.id_venda}`}
-                            >
-                              <FaBan />
-                            </button>
+                            {gerente && (
+                              <button
+                                className="btn btn-danger btn-xs"
+                                onClick={() => {
+                                  setCancelarVenda(v);
+                                  setMotivo('');
+                                }}
+                                title="Cancelar"
+                                aria-label={`Cancelar pedido ${v.id_venda}`}
+                              >
+                                <FaBan />
+                              </button>
+                            )}
                           </>
                         )}
                       </div>

@@ -13,12 +13,11 @@ export default function CadastroPage() {
     cpf: '',
     email: '',
     senha: '',
-    perfil: 'cliente',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const set = (campo: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+  const set = (campo: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [campo]: e.target.value });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,20 +58,10 @@ export default function CadastroPage() {
           <span className="field-label">Nome completo</span>
           <input type="text" className="input" value={form.nome} onChange={set('nome')} placeholder="João Silva" autoComplete="name" required />
         </label>
-        <div className="grid sm:grid-cols-2 gap-x-3">
-          <label className="field">
-            <span className="field-label">CPF</span>
-            <input type="text" className="input" value={form.cpf} onChange={set('cpf')} placeholder="000.000.000-00" inputMode="numeric" required />
-          </label>
-          <label className="field">
-            <span className="field-label">Perfil</span>
-            <select className="input" value={form.perfil} onChange={set('perfil')}>
-              <option value="cliente">Cliente</option>
-              <option value="vendedor">Vendedor</option>
-              <option value="gerente">Gerente</option>
-            </select>
-          </label>
-        </div>
+        <label className="field">
+          <span className="field-label">CPF</span>
+          <input type="text" className="input" value={form.cpf} onChange={set('cpf')} placeholder="000.000.000-00" inputMode="numeric" required />
+        </label>
         <label className="field">
           <span className="field-label">E-mail</span>
           <input type="email" className="input" value={form.email} onChange={set('email')} placeholder="seu@email.com" autoComplete="email" required />

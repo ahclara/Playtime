@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from use_cases.AutenticarUsuarioUseCase import AutenticarUsuarioUseCase
-from middleware.auth import token_required
+from middleware.auth import token_required, usuario_opcional
 from database.Conexao import get_connection
 from instances import sistema
 import bcrypt
@@ -83,8 +83,15 @@ def registrar():
         id_cliente = cliente_data[0]
         nome_cliente = cliente_data[1]
         
-        # 6. Inserir usuário 
-        perfil = dados.get('perfil', 'cliente')
+        # 6. Inserir usuário
+        # Só um gerente logado pode criar vendedor/gerente; qualquer outra
+        # chamada (cadastro público) vira 'cliente'.
+        perfil = 'cliente'
+        quem_chama = usuario_opcional()
+        if quem_chama and quem_chama.get('perfil') == 'gerente':
+            pedido = dados.get('perfil', 'cliente')
+            if pedido in ('cliente', 'vendedor', 'gerente'):
+                perfil = pedido
         cur.execute("""
             INSERT INTO usuarios (id_cliente, email, senha_hash, perfil, ativo, nome)
             VALUES (%s, %s, %s, %s, true, %s)

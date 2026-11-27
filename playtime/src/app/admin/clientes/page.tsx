@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { authApi, clientesApi } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { Cliente } from '@/types';
 import Modal from '@/components/modal';
 import Loader from '@/components/Loader';
@@ -12,6 +13,8 @@ const FORM_VAZIO = { nome: '', cpf: '', email: '', senha: '', perfil: 'cliente' 
 const CORES = ['var(--red)', 'var(--teal)', 'var(--hazard)', '#8b5cf6', '#ff7a1a', '#3fbf5f'];
 
 export default function AdminClientesPage() {
+  const { user } = useAuth();
+  const gerente = user?.perfil === 'gerente'; // só o gerente cria vendedor/gerente e exclui clientes
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
@@ -73,7 +76,7 @@ export default function AdminClientesPage() {
           cpf: form.cpf,
           email: form.email,
           senha: form.senha,
-          perfil: form.perfil,
+          perfil: gerente ? form.perfil : 'cliente',
         });
         toast.success('Cliente registrado.');
       }
@@ -153,9 +156,11 @@ export default function AdminClientesPage() {
                         <button className="btn btn-hazard btn-xs" onClick={() => abrirModal(c)} title="Editar" aria-label={`Editar ${c.nome}`}>
                           <FaEdit />
                         </button>
-                        <button className="btn btn-danger btn-xs" onClick={() => setExcluir(c)} title="Excluir" aria-label={`Excluir ${c.nome}`}>
-                          <FaTrash />
-                        </button>
+                        {gerente && (
+                          <button className="btn btn-danger btn-xs" onClick={() => setExcluir(c)} title="Excluir" aria-label={`Excluir ${c.nome}`}>
+                            <FaTrash />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -183,7 +188,7 @@ export default function AdminClientesPage() {
             <span className="field-label">CPF</span>
             <input className="input" value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} disabled={!!editando} />
           </label>
-          {!editando && (
+          {!editando && gerente && (
             <label className="field">
               <span className="field-label">Perfil</span>
               <select className="input" value={form.perfil} onChange={(e) => setForm({ ...form, perfil: e.target.value })}>

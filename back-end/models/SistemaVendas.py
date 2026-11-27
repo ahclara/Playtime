@@ -124,7 +124,11 @@ class SistemaVendas:
     
     def buscar_usuario_por_cliente(self, id_cliente):
         """Busca um usuário pelo ID do cliente"""
-        return self.usuarios.get(id_cliente)
+        # self.usuarios é indexado por id_usuario, então é preciso procurar pelo id_cliente
+        for usuario in self.usuarios.values():
+            if usuario.id_cliente == id_cliente:
+                return usuario
+        return None
     
     # --------- METODOS DE CLIENTE ---------
     
