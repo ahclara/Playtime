@@ -11,7 +11,7 @@ interface AuthContextData {
   loading: boolean;
   login: (email: string, senha: string) => Promise<void>;
   logout: () => void;
-  register: (dados: { nome: string; cpf: string; email: string; senha: string; perfil?: string }) => Promise<void>;
+  register: (dados: { nome: string; cpf: string; email: string; senha: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push('/');
   };
 
-  const register = async (dados: { nome: string; cpf: string; email: string; senha: string; perfil?: string }) => {
+  const register = async (dados: { nome: string; cpf: string; email: string; senha: string }) => {
     await authApi.register(dados);
     toast.success('Cadastro realizado! Faça login.');
     router.push('/');

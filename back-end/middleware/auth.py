@@ -6,7 +6,9 @@ from datetime import datetime, timedelta
 from database.Conexao import get_connection
 from psycopg2.extras import RealDictCursor
 
-SECRET_KEY = os.getenv("SECRET_KEY", "playtime_super_secret_key_2026")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY não configurada. Defina uma chave JWT no ambiente ou em back-end/.env.")
 ALGORITHM = "HS256"
 
 def gerar_token(id_usuario, id_cliente, email, perfil, nome=None):

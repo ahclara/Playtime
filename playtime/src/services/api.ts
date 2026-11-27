@@ -86,7 +86,7 @@ export const authApi = {
     return api.post<AuthResponse>('/login', { email, senha });
   },
 
-  register(dados: { nome: string; cpf: string; email: string; senha: string; perfil?: string }) {
+  register(dados: { nome: string; cpf: string; email: string; senha: string }) {
     return api.post<{ mensagem: string }>('/registrar', dados);
   },
 };

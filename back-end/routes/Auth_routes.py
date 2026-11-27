@@ -83,15 +83,9 @@ def registrar():
         id_cliente = cliente_data[0]
         nome_cliente = cliente_data[1]
         
-        # 6. Inserir usuário
-        # Só um gerente logado pode criar vendedor/gerente; qualquer outra
-        # chamada (cadastro público) vira 'cliente'.
+        # 6. Inserir usuário 
+        # Cadastro público não pode escolher perfis administrativos.
         perfil = 'cliente'
-        quem_chama = usuario_opcional()
-        if quem_chama and quem_chama.get('perfil') == 'gerente':
-            pedido = dados.get('perfil', 'cliente')
-            if pedido in ('cliente', 'vendedor', 'gerente'):
-                perfil = pedido
         cur.execute("""
             INSERT INTO usuarios (id_cliente, email, senha_hash, perfil, ativo, nome)
             VALUES (%s, %s, %s, %s, true, %s)

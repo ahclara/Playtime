@@ -1,13 +1,15 @@
 import psycopg2
-from psycopg2.extras import RealDictCursor
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://neondb_owner:npg_UK4ZYhbQN6Tf@ep-morning-sky-ac16o3dj.sa-east-1.aws.neon.tech/neondb?sslmode=require")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_connection():
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL não configurada. Defina a variável no ambiente ou em back-end/.env.")
     return psycopg2.connect(DATABASE_URL)
 
 def init_db():
@@ -22,7 +24,7 @@ def init_db():
             nome VARCHAR(100) NOT NULL,
             cpf VARCHAR(14) UNIQUE NOT NULL,
             email VARCHAR(100) NOT NULL,
-            ativo BOOLEAN DEFAULT TRUE,
+            ativo BOOLEAN NOT NULL DEFAULT true,
             data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -84,16 +86,14 @@ def init_db():
             email VARCHAR(100) UNIQUE NOT NULL,
             senha_hash VARCHAR(255) NOT NULL,
             perfil VARCHAR(20) DEFAULT 'cliente',
-            ativo BOOLEAN DEFAULT TRUE,
-            nome VARCHAR(100),
+            ativo BOOLEAN NOT NULL DEFAULT true,
             data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    # Bancos criados antes dessas colunas existirem (o código usa 'ativo' e 'nome')
-    cur.execute("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS ativo BOOLEAN DEFAULT TRUE")
-    cur.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ativo BOOLEAN DEFAULT TRUE")
-    cur.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nome VARCHAR(100)")
+    # Mantém compatibilidade com bancos criados por versões anteriores.
+    cur.execute("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true")
+    cur.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT true")
     
     # 7. Tabela: permissoes (RBAC)
     cur.execute("""

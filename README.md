@@ -290,32 +290,20 @@ source venv/bin/activate      # Linux/macOS
 # 3. Instale as dependências
 pip install -r requirements.txt
 
-# 4. Configure as variáveis de ambiente (ex.: .env)
-# DATABASE_URL=postgresql://usuario:senha@host/db
-# JWT_SECRET=sua_chave_secreta
+# 3. Configure o banco e a chave JWT
+cp .env.example .env
+# Edite .env e informe DATABASE_URL e uma SECRET_KEY aleatÃ³ria
 
-# 5. Execute o servidor
+# 4. Execute o servidor
 python app.py
 ```
 
 ### Front-end
 
 ```bash
-# 1. Acesse a pasta do front-end
-cd Playtime/front-end
-
-# 2. Instale as dependências
+cd ../playtime
 npm install
-
-# 3. Configure as variáveis de ambiente (ex.: .env.local)
-# NEXT_PUBLIC_API_URL=http://localhost:5000
-
-# 4. Execute em modo de desenvolvimento
 npm run dev
-
-# 5. (Opcional) Build de produção
-npm run build
-npm start
 ```
 
 O front-end estará disponível em `http://localhost:3000` e o back-end em `http://localhost:5000` (por padrão).

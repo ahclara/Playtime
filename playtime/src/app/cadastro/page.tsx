@@ -58,10 +58,12 @@ export default function CadastroPage() {
           <span className="field-label">Nome completo</span>
           <input type="text" className="input" value={form.nome} onChange={set('nome')} placeholder="João Silva" autoComplete="name" required />
         </label>
-        <label className="field">
-          <span className="field-label">CPF</span>
-          <input type="text" className="input" value={form.cpf} onChange={set('cpf')} placeholder="000.000.000-00" inputMode="numeric" required />
-        </label>
+        <div className="grid sm:grid-cols-2 gap-x-3">
+          <label className="field">
+            <span className="field-label">CPF</span>
+            <input type="text" className="input" value={form.cpf} onChange={set('cpf')} placeholder="000.000.000-00" inputMode="numeric" required />
+          </label>
+        </div>
         <label className="field">
           <span className="field-label">E-mail</span>
           <input type="email" className="input" value={form.email} onChange={set('email')} placeholder="seu@email.com" autoComplete="email" required />
