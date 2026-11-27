@@ -8,9 +8,11 @@
 
 O **Playtime** é um sistema web completo para gerenciamento de lojas de brinquedos, desenvolvido como projeto da disciplina **Programação para Web**. O sistema permite que clientes comprem produtos, vendedores realizem vendas e gerentes controlem estoque, clientes e gerem relatórios.
 
+O projeto é dividido em **back-end** (Python + Flask + PostgreSQL) e **front-end** (Next.js + TypeScript + Tailwind CSS), seguindo princípios de **DDD (Domain-Driven Design)**, **Repository Pattern** e **Arquitetura em Camadas**.
+
 ---
 
-## 👥 **Atores do Sistema**
+## **Atores do Sistema**
 
 | Ator | Funcionalidades |
 |------|-----------------|
@@ -21,7 +23,7 @@ O **Playtime** é um sistema web completo para gerenciamento de lojas de brinque
 
 ---
 
-## 📋 **Casos de Uso**
+## **Casos de Uso**
 
 | # | Caso de Uso | Atores | 
 |---|-------------|--------|
@@ -46,7 +48,7 @@ O **Playtime** é um sistema web completo para gerenciamento de lojas de brinque
 
 ---
 
-## 🗄️ **Diagrama de Classes (Back-end)**
+## **Diagrama de Classes (Back-end)**
 
 ![Diagrama de Classes](./docs/Diagrama_de_classes.png)
 
@@ -72,7 +74,7 @@ O **Playtime** é um sistema web completo para gerenciamento de lojas de brinque
 
 ---
 
-## 🛠️ **Tecnologias Utilizadas**
+## **Tecnologias Utilizadas**
 
 <div align="center">
 
@@ -84,12 +86,13 @@ O **Playtime** é um sistema web completo para gerenciamento de lojas de brinque
 | **Versionamento** | Git · GitHub |
 | **Prototipação** | Figma |
 | **Arquitetura** | DDD · Repository Pattern · Arquitetura em Camadas |
+| **Qualidade de Código** | ESLint · PostCSS · Autoprefixer |
 
 </div>
 
 ---
 
-## 🔐 **Autenticação e Segurança**
+## **Autenticação e Segurança**
 
 O sistema utiliza **JWT (JSON Web Token)** para autenticação e **RBAC (Role-Based Access Control)** para controle de permissões.
 
@@ -103,7 +106,7 @@ O sistema utiliza **JWT (JSON Web Token)** para autenticação e **RBAC (Role-Ba
 
 ---
 
-## 📊 **Endpoints da API**
+## **Endpoints da API**
 
 ### Autenticação
 
@@ -161,13 +164,7 @@ O sistema utiliza **JWT (JSON Web Token)** para autenticação e **RBAC (Role-Ba
 
 ---
 
-## 🎨 **Figma - Prototipação**
-
-![Figma]()
-
----
-
-## 🖥️ **Páginas Implementadas**
+## **Páginas Implementadas (Front-end)**
 
 | Rota | Página | Descrição | Perfil |
 |------|--------|-----------|--------|
@@ -181,7 +178,7 @@ O sistema utiliza **JWT (JSON Web Token)** para autenticação e **RBAC (Role-Ba
 
 ---
 
-## 🗄️ **Banco de Dados**
+## **Banco de Dados**
 
 ### Modelo Relacional
 
@@ -203,12 +200,80 @@ O sistema utiliza **JWT (JSON Web Token)** para autenticação e **RBAC (Role-Ba
 
 ---
 
-## 🚀 **Como Executar o Projeto**
+## **Estrutura do Projeto**
+
+```
+Playtime/
+├── back-end/                  # API Flask
+│   ├── app.py
+│   ├── requirements.txt
+│   └── ...
+├── front-end/                 # Aplicação Next.js
+│   ├── src/
+│   │   ├── app/               # Rotas (App Router)
+│   │   ├── components/        # Componentes reutilizáveis
+│   │   ├── contexts/          # Contextos React (ex: Auth)
+│   │   ├── services/          # Chamadas à API
+│   │   ├── styles/            # Estilos globais
+│   │   └── types/             # Tipagens TypeScript
+│   ├── public/                # Arquivos estáticos
+│   ├── eslint.config.mjs      # Configuração do ESLint
+│   ├── next.config.ts         # Configuração do Next.js
+│   ├── postcss.config.mjs     # Configuração do PostCSS
+│   ├── tailwind.config.js     # Configuração do Tailwind CSS
+│   ├── tsconfig.json          # Configuração do TypeScript
+│   └── package.json
+└── docs/                      # Diagramas e documentação
+```
+
+### Aliases TypeScript (`tsconfig.json`)
+
+| Alias | Caminho |
+|-------|---------|
+| `@/*` | `./src/*` |
+| `@components/*` | `./src/components/*` |
+| `@contexts/*` | `./src/contexts/*` |
+| `@services/*` | `./src/services/*` |
+| `@styles/*` | `./src/styles/*` |
+| `@types/*` | `./src/types/*` |
+
+---
+
+## **Tema Tailwind (`tailwind.config.js`)**
+
+Cores customizadas definidas no projeto:
+
+| Token | Cor | Uso |
+|-------|-----|-----|
+| `primary` | `#4f46e5` | Cor principal da marca |
+| `primary-dark` | `#4338ca` | Variação escura |
+| `primary-light` | `#818cf8` | Variação clara |
+| `primary-bg` | `#eef2ff` | Fundo suave |
+| `success` | `#22c55e` | Confirmações |
+| `danger` | `#ef4444` | Erros/cancelamentos |
+| `warning` | `#f59e0b` | Alertas |
+
+---
+
+## **Qualidade de Código (Front-end)**
+
+O projeto usa **ESLint** com as configurações oficiais do Next.js:
+
+- `eslint-config-next/core-web-vitals` → boas práticas de performance e acessibilidade
+- `eslint-config-next/typescript` → regras específicas para TypeScript
+- Ignora automaticamente: `.next/**`, `out/**`, `build/**`, `next-env.d.ts`
+
+E **PostCSS** com **Tailwind CSS** e **Autoprefixer** para compatibilidade entre navegadores.
+
+---
+
+## **Como Executar o Projeto**
 
 ### Pré-requisitos
 
 - Python 3.9+
 - Node.js 18+
+- Conta no [Neon.tech](https://neon.tech) (PostgreSQL) ou PostgreSQL local
 
 ### Back-end
 
@@ -217,7 +282,12 @@ O sistema utiliza **JWT (JSON Web Token)** para autenticação e **RBAC (Role-Ba
 git clone https://github.com/ahclara/Playtime.git
 cd Playtime/back-end
 
-# 2. Instale as dependências
+# 2. Crie e ative um ambiente virtual (recomendado)
+python -m venv venv
+source venv/bin/activate      # Linux/macOS
+# venv\Scripts\activate       # Windows
+
+# 3. Instale as dependências
 pip install -r requirements.txt
 
 # 3. Configure o banco e a chave JWT
@@ -236,12 +306,27 @@ npm install
 npm run dev
 ```
 
+O front-end estará disponível em `http://localhost:3000` e o back-end em `http://localhost:5000` (por padrão).
+
+---
+
+## **Scripts Disponíveis (Front-end)**
+
+| Script | Descrição |
+|--------|-----------|
+| `npm run dev` | Inicia o servidor de desenvolvimento |
+| `npm run build` | Gera build de produção |
+| `npm start` | Inicia o servidor em modo produção |
+| `npm run lint` | Executa o ESLint |
+
 ---
 
 ## 👥 **Equipe**
 
 | Nome | Responsabilidade |
 |------|------------------|
-| Eduarda Cecília | Back-end · Banco de Dados | 
-| Ana Clara | Front-end · Design | 
+| Eduarda Cecília, Thais Maria, Antônio José | Back-end · Banco de Dados | 
+| Ana Clara, Selton | Front-end · Design |
+
 ---
+```

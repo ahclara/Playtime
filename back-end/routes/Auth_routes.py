@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from use_cases.AutenticarUsuarioUseCase import AutenticarUsuarioUseCase
-from middleware.auth import token_required
+from middleware.auth import token_required, usuario_opcional
 from database.Conexao import get_connection
 from instances import sistema
 import bcrypt
